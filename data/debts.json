@@ -1,0 +1,80 @@
+[
+  {
+    "id": 1787008911647,
+    "customerName": "Moises",
+    "totalAmount": 2000,
+    "paidAmount": 0,
+    "remainingAmount": 2000,
+    "status": "pending",
+    "date": "2026-08-17T23:21:51.462Z",
+    "updatedAt": "2026-08-17T23:21:51.462Z",
+    "items": [
+      {
+        "id": 1786081226553,
+        "name": "Juicy Kush",
+        "type": "Sativa",
+        "size": "5 g",
+        "quantity": 1,
+        "salePrice": 2000
+      }
+    ],
+    "payments": []
+  },
+  {
+    "id": 1787009463479,
+    "customerName": "Roid",
+    "totalAmount": 1500,
+    "paidAmount": 1500,
+    "remainingAmount": 0,
+    "status": "paid",
+    "date": "2026-08-17T23:31:03.378Z",
+    "updatedAt": "2026-08-18T00:31:38.044Z",
+    "items": [
+      {
+        "id": 1786081160568,
+        "name": "Munchies Lil Ripper",
+        "type": "Sativa",
+        "size": "2 g",
+        "quantity": 1,
+        "salePrice": 1500
+      }
+    ],
+    "payments": [
+      {
+        "id": 1787009464365,
+        "amount": 1000,
+        "paymentMethod": "cash",
+        "note": "Abono inicial",
+        "date": "2026-08-17T23:31:03.378Z"
+      },
+      {
+        "id": 1787013098929,
+        "amount": 500,
+        "paymentMethod": "transfer",
+        "note": "Pago",
+        "date": "2026-08-18T00:31:38.044Z"
+      }
+    ]
+  },
+  {
+    "id": 1787009496394,
+    "customerName": "Ale",
+    "totalAmount": 3000,
+    "paidAmount": 0,
+    "remainingAmount": 3000,
+    "status": "pending",
+    "date": "2026-08-17T23:31:36.107Z",
+    "updatedAt": "2026-08-17T23:31:36.107Z",
+    "items": [
+      {
+        "id": 1786081226553,
+        "name": "Juicy Kush",
+        "type": "Sativa",
+        "size": "5 g",
+        "quantity": 1,
+        "salePrice": 3000
+      }
+    ],
+    "payments": []
+  }
+]

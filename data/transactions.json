@@ -1,0 +1,126 @@
+[
+  {
+    "id": 1786082300720,
+    "type": "sale",
+    "amount": 1600,
+    "paymentMethod": "transfer",
+    "date": "2026-08-07T05:58:20.650Z",
+    "note": "Venta por transferencia",
+    "items": [
+      {
+        "id": 1786081402978,
+        "name": "Dazed AiBlenz",
+        "type": "Sativa",
+        "size": "3 g",
+        "quantity": 1,
+        "salePrice": 1600
+      }
+    ]
+  },
+  {
+    "id": 1786082413816,
+    "type": "sale",
+    "amount": 2000,
+    "paymentMethod": "transfer",
+    "date": "2026-08-07T06:00:13.125Z",
+    "note": "Venta por transferencia",
+    "items": [
+      {
+        "id": 1786081226553,
+        "name": "Juicy Kush",
+        "type": "Sativa",
+        "size": "5 g",
+        "quantity": 1,
+        "salePrice": 2000
+      }
+    ]
+  },
+  {
+    "id": 1786734258238,
+    "type": "sale",
+    "amount": 1500,
+    "paymentMethod": "transfer",
+    "date": "2026-08-14T19:04:17.455Z",
+    "note": "Venta por transferencia",
+    "items": [
+      {
+        "id": 1786081160568,
+        "name": "Munchies Lil Ripper",
+        "type": "Sativa",
+        "size": "2 g",
+        "quantity": 1,
+        "salePrice": 1500
+      }
+    ]
+  },
+  {
+    "id": 1786825559937,
+    "type": "sale",
+    "amount": 1500,
+    "paymentMethod": "transfer",
+    "date": "2026-08-15T20:25:59.491Z",
+    "note": "Venta por transferencia",
+    "items": [
+      {
+        "id": 1786081160568,
+        "name": "Munchies Lil Ripper",
+        "type": "Sativa",
+        "size": "2 g",
+        "quantity": 1,
+        "salePrice": 1500
+      }
+    ]
+  },
+  {
+    "id": 1787009464214,
+    "type": "debt_sale",
+    "amount": 1000,
+    "paymentMethod": "cash",
+    "date": "2026-08-17T23:31:03.378Z",
+    "note": "Abono inicial de Roid",
+    "debtId": 1787009463479,
+    "paymentId": 1787009464365,
+    "customerName": "Roid",
+    "totalAmount": 1500,
+    "items": [
+      {
+        "id": 1786081160568,
+        "name": "Munchies Lil Ripper",
+        "type": "Sativa",
+        "size": "2 g",
+        "quantity": 1,
+        "salePrice": 1500
+      }
+    ]
+  },
+  {
+    "id": 1787009527123,
+    "type": "expense",
+    "amount": 500,
+    "paymentMethod": "cash",
+    "date": "2026-08-17T23:32:06.248Z",
+    "note": "Gasto personal",
+    "items": []
+  },
+  {
+    "id": 1787013098123,
+    "type": "debt_payment",
+    "amount": 500,
+    "paymentMethod": "transfer",
+    "date": "2026-08-18T00:31:38.044Z",
+    "note": "Pago",
+    "debtId": 1787009463479,
+    "paymentId": 1787013098929,
+    "customerName": "Roid",
+    "items": [
+      {
+        "id": 1786081160568,
+        "name": "Munchies Lil Ripper",
+        "type": "Sativa",
+        "size": "2 g",
+        "quantity": 1,
+        "salePrice": 1500
+      }
+    ]
+  }
+]

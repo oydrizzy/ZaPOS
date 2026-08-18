@@ -1,0 +1,953 @@
+[
+  {
+    "id": 1786079081686,
+    "type": "success",
+    "entity": "product",
+    "message": "Producto eliminado: Cafe Espresso",
+    "metadata": {
+      "productId": 1
+    },
+    "date": "2026-08-07T05:04:41.422Z"
+  },
+  {
+    "id": 1786079083964,
+    "type": "success",
+    "entity": "product",
+    "message": "Producto eliminado: Agua Mineral",
+    "metadata": {
+      "productId": 2
+    },
+    "date": "2026-08-07T05:04:43.624Z"
+  },
+  {
+    "id": 1786079091297,
+    "type": "success",
+    "entity": "product",
+    "message": "Producto eliminado: Pan Integral",
+    "metadata": {
+      "productId": 3
+    },
+    "date": "2026-08-07T05:04:50.313Z"
+  },
+  {
+    "id": 1786079365801,
+    "type": "success",
+    "entity": "cart",
+    "message": "Agregado al carrito: Jugo Natural",
+    "metadata": {
+      "productId": 4,
+      "quantity": 1
+    },
+    "date": "2026-08-07T05:09:25.154Z"
+  },
+  {
+    "id": 1786079368330,
+    "type": "success",
+    "entity": "cart",
+    "message": "Eliminado del carrito: Jugo Natural",
+    "metadata": {
+      "productId": 4,
+      "quantity": 1
+    },
+    "date": "2026-08-07T05:09:27.344Z"
+  },
+  {
+    "id": 1786079369889,
+    "type": "success",
+    "entity": "cart",
+    "message": "Agregado al carrito: Jugo Natural",
+    "metadata": {
+      "productId": 4,
+      "quantity": 1
+    },
+    "date": "2026-08-07T05:09:29.556Z"
+  },
+  {
+    "id": 1786080174244,
+    "type": "success",
+    "entity": "cart",
+    "message": "Agregado al carrito: Jugo Natural",
+    "metadata": {
+      "productId": 4,
+      "quantity": 1
+    },
+    "date": "2026-08-07T05:22:53.762Z"
+  },
+  {
+    "id": 1786080187901,
+    "type": "success",
+    "entity": "cart",
+    "message": "Agregado al carrito: Jugo Natural",
+    "metadata": {
+      "productId": 4,
+      "quantity": 1
+    },
+    "date": "2026-08-07T05:23:07.579Z"
+  },
+  {
+    "id": 1786080202010,
+    "type": "success",
+    "entity": "cart",
+    "message": "Eliminado del carrito: Jugo Natural",
+    "metadata": {
+      "productId": 4,
+      "quantity": 1
+    },
+    "date": "2026-08-07T05:23:21.100Z"
+  },
+  {
+    "id": 1786080203912,
+    "type": "success",
+    "entity": "cart",
+    "message": "Agregado al carrito: Jugo Natural",
+    "metadata": {
+      "productId": 4,
+      "quantity": 1
+    },
+    "date": "2026-08-07T05:23:23.250Z"
+  },
+  {
+    "id": 1786080239886,
+    "type": "success",
+    "entity": "cart",
+    "message": "Agregado al carrito: Jugo Natural",
+    "metadata": {
+      "productId": 4,
+      "quantity": 1
+    },
+    "date": "2026-08-07T05:23:59.157Z"
+  },
+  {
+    "id": 1786080267898,
+    "type": "success",
+    "entity": "cart",
+    "message": "Eliminado del carrito: Jugo Natural",
+    "metadata": {
+      "productId": 4,
+      "quantity": 1
+    },
+    "date": "2026-08-07T05:24:27.889Z"
+  },
+  {
+    "id": 1786080270540,
+    "type": "success",
+    "entity": "cart",
+    "message": "Agregado al carrito: Jugo Natural",
+    "metadata": {
+      "productId": 4,
+      "quantity": 1
+    },
+    "date": "2026-08-07T05:24:29.847Z"
+  },
+  {
+    "id": 1786080527390,
+    "type": "success",
+    "entity": "cart",
+    "message": "Agregado al carrito: Jugo Natural",
+    "metadata": {
+      "productId": 4,
+      "quantity": 1
+    },
+    "date": "2026-08-07T05:28:46.704Z"
+  },
+  {
+    "id": 1786080531078,
+    "type": "success",
+    "entity": "cart",
+    "message": "Eliminado del carrito: Jugo Natural",
+    "metadata": {
+      "productId": 4,
+      "quantity": 1
+    },
+    "date": "2026-08-07T05:28:50.765Z"
+  },
+  {
+    "id": 1786080582903,
+    "type": "success",
+    "entity": "product",
+    "message": "Producto eliminado: Jugo Natural",
+    "metadata": {
+      "productId": 4
+    },
+    "date": "2026-08-07T05:29:42.742Z"
+  },
+  {
+    "id": 1786081085641,
+    "type": "success",
+    "entity": "product",
+    "message": "Producto creado: Dazed AiBlenz (Indica)",
+    "metadata": {
+      "productId": 1786081085975
+    },
+    "date": "2026-08-07T05:38:05.075Z"
+  },
+  {
+    "id": 1786081160481,
+    "type": "success",
+    "entity": "product",
+    "message": "Producto creado: Munchies Lil Ripper (Sativa)",
+    "metadata": {
+      "productId": 1786081160568
+    },
+    "date": "2026-08-07T05:39:19.820Z"
+  },
+  {
+    "id": 1786081225830,
+    "type": "success",
+    "entity": "product",
+    "message": "Producto creado: Juicy Kush (Sativa)",
+    "metadata": {
+      "productId": 1786081226553
+    },
+    "date": "2026-08-07T05:40:25.718Z"
+  },
+  {
+    "id": 1786081233687,
+    "type": "success",
+    "entity": "product",
+    "message": "Producto actualizado: Juicy Kush (Sativa)",
+    "metadata": {
+      "productId": 1786081226553
+    },
+    "date": "2026-08-07T05:40:33.687Z"
+  },
+  {
+    "id": 1786081239663,
+    "type": "success",
+    "entity": "product",
+    "message": "Producto actualizado: Juicy Kush (Sativa)",
+    "metadata": {
+      "productId": 1786081226553
+    },
+    "date": "2026-08-07T05:40:38.933Z"
+  },
+  {
+    "id": 1786081341350,
+    "type": "success",
+    "entity": "product",
+    "message": "Producto creado: Modus Breeezt Blend (Indica)",
+    "metadata": {
+      "productId": 1786081342274
+    },
+    "date": "2026-08-07T05:42:21.285Z"
+  },
+  {
+    "id": 1786081402597,
+    "type": "success",
+    "entity": "product",
+    "message": "Producto creado: Dazed AiBlenz (Sativa)",
+    "metadata": {
+      "productId": 1786081402978
+    },
+    "date": "2026-08-07T05:43:22.270Z"
+  },
+  {
+    "id": 1786081428468,
+    "type": "success",
+    "entity": "product",
+    "message": "Producto actualizado: Dazed AiBlenz (Indica)",
+    "metadata": {
+      "productId": 1786081085975
+    },
+    "date": "2026-08-07T05:43:48.276Z"
+  },
+  {
+    "id": 1786081741579,
+    "type": "success",
+    "entity": "product",
+    "message": "Producto actualizado: Juicy Kush (Sativa)",
+    "metadata": {
+      "productId": 1786081226553
+    },
+    "date": "2026-08-07T05:49:00.679Z"
+  },
+  {
+    "id": 1786081741907,
+    "type": "success",
+    "entity": "product",
+    "message": "Producto actualizado: Juicy Kush (Sativa)",
+    "metadata": {
+      "productId": 1786081226553
+    },
+    "date": "2026-08-07T05:49:01.181Z"
+  },
+  {
+    "id": 1786081757296,
+    "type": "success",
+    "entity": "product",
+    "message": "Producto actualizado: Juicy Kush (Sativa)",
+    "metadata": {
+      "productId": 1786081226553
+    },
+    "date": "2026-08-07T05:49:17.176Z"
+  },
+  {
+    "id": 1786082288197,
+    "type": "success",
+    "entity": "cart",
+    "message": "Agregado al carrito: Dazed AiBlenz (Sativa)",
+    "metadata": {
+      "productId": 1786081402978,
+      "quantity": 1
+    },
+    "date": "2026-08-07T05:58:08.084Z"
+  },
+  {
+    "id": 1786082301510,
+    "type": "success",
+    "entity": "sale",
+    "message": "Venta registrada por RD$1600.00",
+    "metadata": {
+      "transactionId": 1786082300720
+    },
+    "date": "2026-08-07T05:58:20.654Z"
+  },
+  {
+    "id": 1786082310107,
+    "type": "success",
+    "entity": "cart",
+    "message": "Agregado al carrito: Juicy Kush (Sativa)",
+    "metadata": {
+      "productId": 1786081226553,
+      "quantity": 1
+    },
+    "date": "2026-08-07T05:58:29.727Z"
+  },
+  {
+    "id": 1786082325747,
+    "type": "success",
+    "entity": "cart",
+    "message": "Agregado al carrito: Juicy Kush (Sativa)",
+    "metadata": {
+      "productId": 1786081226553,
+      "quantity": 1
+    },
+    "date": "2026-08-07T05:58:44.883Z"
+  },
+  {
+    "id": 1786082346049,
+    "type": "success",
+    "entity": "sale",
+    "message": "Venta registrada por RD$3000.00",
+    "metadata": {
+      "transactionId": 1786082346910
+    },
+    "date": "2026-08-07T05:59:05.972Z"
+  },
+  {
+    "id": 1786082372250,
+    "type": "success",
+    "entity": "product",
+    "message": "Producto actualizado: Juicy Kush (Sativa)",
+    "metadata": {
+      "productId": 1786081226553
+    },
+    "date": "2026-08-07T05:59:31.920Z"
+  },
+  {
+    "id": 1786082384641,
+    "type": "success",
+    "entity": "product",
+    "message": "Producto actualizado: Juicy Kush (Sativa)",
+    "metadata": {
+      "productId": 1786081226553
+    },
+    "date": "2026-08-07T05:59:44.284Z"
+  },
+  {
+    "id": 1786082398254,
+    "type": "success",
+    "entity": "cart",
+    "message": "Agregado al carrito: Juicy Kush (Sativa)",
+    "metadata": {
+      "productId": 1786081226553,
+      "quantity": 1
+    },
+    "date": "2026-08-07T05:59:58.114Z"
+  },
+  {
+    "id": 1786082413804,
+    "type": "success",
+    "entity": "sale",
+    "message": "Venta registrada por RD$2000.00",
+    "metadata": {
+      "transactionId": 1786082413816
+    },
+    "date": "2026-08-07T06:00:13.127Z"
+  },
+  {
+    "id": 1786082673249,
+    "type": "success",
+    "entity": "cart",
+    "message": "Agregado al carrito: Modus Breeezt Blend (Indica)",
+    "metadata": {
+      "productId": 1786081342274,
+      "quantity": 1
+    },
+    "date": "2026-08-07T06:04:32.901Z"
+  },
+  {
+    "id": 1786240149673,
+    "type": "success",
+    "entity": "cart",
+    "message": "Agregado al carrito: Munchies Lil Ripper (Sativa)",
+    "metadata": {
+      "productId": 1786081160568,
+      "quantity": 1
+    },
+    "date": "2026-08-09T01:49:08.861Z"
+  },
+  {
+    "id": 1786240158743,
+    "type": "success",
+    "entity": "cart",
+    "message": "Eliminado del carrito: Munchies Lil Ripper (Sativa)",
+    "metadata": {
+      "productId": 1786081160568,
+      "quantity": 1
+    },
+    "date": "2026-08-09T01:49:18.308Z"
+  },
+  {
+    "id": 1786240921159,
+    "type": "success",
+    "entity": "cart",
+    "message": "Agregado al carrito: Dazed AiBlenz (Indica)",
+    "metadata": {
+      "productId": 1786081085975,
+      "quantity": 1
+    },
+    "date": "2026-08-09T02:02:00.620Z"
+  },
+  {
+    "id": 1786240944817,
+    "type": "success",
+    "entity": "cart",
+    "message": "Eliminado del carrito: Dazed AiBlenz (Indica)",
+    "metadata": {
+      "productId": 1786081085975,
+      "quantity": 1
+    },
+    "date": "2026-08-09T02:02:24.204Z"
+  },
+  {
+    "id": 1786240948085,
+    "type": "success",
+    "entity": "cart",
+    "message": "Agregado al carrito: Dazed AiBlenz (Indica)",
+    "metadata": {
+      "productId": 1786081085975,
+      "quantity": 1
+    },
+    "date": "2026-08-09T02:02:28.010Z"
+  },
+  {
+    "id": 1786240953415,
+    "type": "success",
+    "entity": "cart",
+    "message": "Eliminado del carrito: Dazed AiBlenz (Indica)",
+    "metadata": {
+      "productId": 1786081085975,
+      "quantity": 1
+    },
+    "date": "2026-08-09T02:02:32.582Z"
+  },
+  {
+    "id": 1786240954923,
+    "type": "success",
+    "entity": "cart",
+    "message": "Agregado al carrito: Munchies Lil Ripper (Sativa)",
+    "metadata": {
+      "productId": 1786081160568,
+      "quantity": 1
+    },
+    "date": "2026-08-09T02:02:34.470Z"
+  },
+  {
+    "id": 1786240972945,
+    "type": "success",
+    "entity": "cart",
+    "message": "Eliminado del carrito: Munchies Lil Ripper (Sativa)",
+    "metadata": {
+      "productId": 1786081160568,
+      "quantity": 1
+    },
+    "date": "2026-08-09T02:02:51.974Z"
+  },
+  {
+    "id": 1786240975735,
+    "type": "success",
+    "entity": "cart",
+    "message": "Agregado al carrito: Munchies Lil Ripper (Sativa)",
+    "metadata": {
+      "productId": 1786081160568,
+      "quantity": 1
+    },
+    "date": "2026-08-09T02:02:55.484Z"
+  },
+  {
+    "id": 1786241200876,
+    "type": "success",
+    "entity": "product",
+    "message": "Producto actualizado: Munchies Lil Ripper (Sativa)",
+    "metadata": {
+      "productId": 1786081160568
+    },
+    "date": "2026-08-09T02:06:40.628Z"
+  },
+  {
+    "id": 1786241222205,
+    "type": "success",
+    "entity": "product",
+    "message": "Producto actualizado: Modus Breeezt Blend (Indica)",
+    "metadata": {
+      "productId": 1786081342274
+    },
+    "date": "2026-08-09T02:07:02.111Z"
+  },
+  {
+    "id": 1786241731664,
+    "type": "success",
+    "entity": "cart",
+    "message": "Agregado al carrito: Juicy Kush (Sativa)",
+    "metadata": {
+      "productId": 1786081226553,
+      "quantity": 1
+    },
+    "date": "2026-08-09T02:15:30.807Z"
+  },
+  {
+    "id": 1786241793478,
+    "type": "success",
+    "entity": "cart",
+    "message": "Eliminado del carrito: Juicy Kush (Sativa)",
+    "metadata": {
+      "productId": 1786081226553,
+      "quantity": 1
+    },
+    "date": "2026-08-09T02:16:32.718Z"
+  },
+  {
+    "id": 1786242344337,
+    "type": "success",
+    "entity": "cart",
+    "message": "Agregado al carrito: Munchies Lil Ripper (Sativa)",
+    "metadata": {
+      "productId": 1786081160568,
+      "quantity": 1
+    },
+    "date": "2026-08-09T02:25:43.565Z"
+  },
+  {
+    "id": 1786734011626,
+    "type": "success",
+    "entity": "cart",
+    "message": "Agregado al carrito: Dazed AiBlenz (Indica)",
+    "metadata": {
+      "productId": 1786081085975,
+      "quantity": 1
+    },
+    "date": "2026-08-14T19:00:10.724Z"
+  },
+  {
+    "id": 1786734019741,
+    "type": "success",
+    "entity": "cart",
+    "message": "Eliminado del carrito: Dazed AiBlenz (Indica)",
+    "metadata": {
+      "productId": 1786081085975,
+      "quantity": 1
+    },
+    "date": "2026-08-14T19:00:18.794Z"
+  },
+  {
+    "id": 1786734044972,
+    "type": "success",
+    "entity": "cart",
+    "message": "Agregado al carrito: Munchies Lil Ripper (Sativa)",
+    "metadata": {
+      "productId": 1786081160568,
+      "quantity": 1
+    },
+    "date": "2026-08-14T19:00:44.815Z"
+  },
+  {
+    "id": 1786734064231,
+    "type": "success",
+    "entity": "cart",
+    "message": "Eliminado del carrito: Munchies Lil Ripper (Sativa)",
+    "metadata": {
+      "productId": 1786081160568,
+      "quantity": 1
+    },
+    "date": "2026-08-14T19:01:03.345Z"
+  },
+  {
+    "id": 1786734125997,
+    "type": "success",
+    "entity": "product",
+    "message": "Producto actualizado: Munchies Lil Ripper (Sativa)",
+    "metadata": {
+      "productId": 1786081160568
+    },
+    "date": "2026-08-14T19:02:05.187Z"
+  },
+  {
+    "id": 1786734249569,
+    "type": "success",
+    "entity": "cart",
+    "message": "Agregado al carrito: Munchies Lil Ripper (Sativa)",
+    "metadata": {
+      "productId": 1786081160568,
+      "quantity": 1
+    },
+    "date": "2026-08-14T19:04:08.651Z"
+  },
+  {
+    "id": 1786734257937,
+    "type": "success",
+    "entity": "sale",
+    "message": "Venta registrada por RD$1500.00",
+    "metadata": {
+      "transactionId": 1786734258238
+    },
+    "date": "2026-08-14T19:04:17.457Z"
+  },
+  {
+    "id": 1786734724062,
+    "type": "success",
+    "entity": "product",
+    "message": "Producto actualizado: Juicy Kush (Sativa)",
+    "metadata": {
+      "productId": 1786081226553
+    },
+    "date": "2026-08-14T19:12:03.771Z"
+  },
+  {
+    "id": 1786734734991,
+    "type": "success",
+    "entity": "product",
+    "message": "Producto actualizado: Juicy Kush (Sativa)",
+    "metadata": {
+      "productId": 1786081226553
+    },
+    "date": "2026-08-14T19:12:14.477Z"
+  },
+  {
+    "id": 1786734769895,
+    "type": "success",
+    "entity": "product",
+    "message": "Producto actualizado: Juicy Kush (Sativa)",
+    "metadata": {
+      "productId": 1786081226553
+    },
+    "date": "2026-08-14T19:12:49.280Z"
+  },
+  {
+    "id": 1786735316004,
+    "type": "success",
+    "entity": "cart",
+    "message": "Agregado al carrito: Modus Breeezt Blend (Indica)",
+    "metadata": {
+      "productId": 1786081342274,
+      "quantity": 1
+    },
+    "date": "2026-08-14T19:21:55.477Z"
+  },
+  {
+    "id": 1786735318560,
+    "type": "success",
+    "entity": "cart",
+    "message": "Eliminado del carrito: Modus Breeezt Blend (Indica)",
+    "metadata": {
+      "productId": 1786081342274,
+      "quantity": 1
+    },
+    "date": "2026-08-14T19:21:57.923Z"
+  },
+  {
+    "id": 1786819030838,
+    "type": "success",
+    "entity": "product",
+    "message": "Producto actualizado: Munchies Lil Ripper (Sativa)",
+    "metadata": {
+      "productId": 1786081160568
+    },
+    "date": "2026-08-15T18:37:10.388Z"
+  },
+  {
+    "id": 1786819041583,
+    "type": "success",
+    "entity": "product",
+    "message": "Producto actualizado: Munchies Lil Ripper (Sativa)",
+    "metadata": {
+      "productId": 1786081160568
+    },
+    "date": "2026-08-15T18:37:20.923Z"
+  },
+  {
+    "id": 1786819076406,
+    "type": "success",
+    "entity": "product",
+    "message": "Producto actualizado: Munchies Lil Ripper (Sativa)",
+    "metadata": {
+      "productId": 1786081160568
+    },
+    "date": "2026-08-15T18:37:55.873Z"
+  },
+  {
+    "id": 1786819133323,
+    "type": "success",
+    "entity": "product",
+    "message": "Producto actualizado: Munchies Lil Ripper (Sativa)",
+    "metadata": {
+      "productId": 1786081160568
+    },
+    "date": "2026-08-15T18:38:52.506Z"
+  },
+  {
+    "id": 1786825548878,
+    "type": "success",
+    "entity": "cart",
+    "message": "Agregado al carrito: Munchies Lil Ripper (Sativa)",
+    "metadata": {
+      "productId": 1786081160568,
+      "quantity": 1
+    },
+    "date": "2026-08-15T20:25:48.727Z"
+  },
+  {
+    "id": 1786825559613,
+    "type": "success",
+    "entity": "sale",
+    "message": "Venta registrada por RD$1500.00",
+    "metadata": {
+      "transactionId": 1786825559937
+    },
+    "date": "2026-08-15T20:25:59.501Z"
+  },
+  {
+    "id": 1786825568286,
+    "type": "success",
+    "entity": "cart",
+    "message": "Agregado al carrito: Munchies Lil Ripper (Sativa)",
+    "metadata": {
+      "productId": 1786081160568,
+      "quantity": 1
+    },
+    "date": "2026-08-15T20:26:08.272Z"
+  },
+  {
+    "id": 1786825995105,
+    "type": "success",
+    "entity": "product",
+    "message": "Producto actualizado: Munchies Lil Ripper (Sativa)",
+    "metadata": {
+      "productId": 1786081160568
+    },
+    "date": "2026-08-15T20:33:14.847Z"
+  },
+  {
+    "id": 1787008659997,
+    "type": "success",
+    "entity": "cart",
+    "message": "Agregado al carrito: Dazed AiBlenz (Indica)",
+    "metadata": {
+      "productId": 1786081085975,
+      "quantity": 1
+    },
+    "date": "2026-08-17T23:17:39.045Z"
+  },
+  {
+    "id": 1787008693223,
+    "type": "success",
+    "entity": "cart",
+    "message": "Agregado al carrito: Munchies Lil Ripper (Sativa)",
+    "metadata": {
+      "productId": 1786081160568,
+      "quantity": 1
+    },
+    "date": "2026-08-17T23:18:12.733Z"
+  },
+  {
+    "id": 1787008700359,
+    "type": "success",
+    "entity": "cart",
+    "message": "Eliminado del carrito: Dazed AiBlenz (Indica)",
+    "metadata": {
+      "productId": 1786081085975,
+      "quantity": 1
+    },
+    "date": "2026-08-17T23:18:19.748Z"
+  },
+  {
+    "id": 1787008704333,
+    "type": "success",
+    "entity": "sale",
+    "message": "Venta registrada por RD$1500.00",
+    "metadata": {
+      "transactionId": 1787008704317
+    },
+    "date": "2026-08-17T23:18:23.527Z"
+  },
+  {
+    "id": 1787008893377,
+    "type": "success",
+    "entity": "cart",
+    "message": "Agregado al carrito: Juicy Kush (Sativa)",
+    "metadata": {
+      "productId": 1786081226553,
+      "quantity": 1
+    },
+    "date": "2026-08-17T23:21:32.878Z"
+  },
+  {
+    "id": 1787008912166,
+    "type": "success",
+    "entity": "debt",
+    "message": "Venta fiada a Moises: RD$2000.00 pendiente",
+    "metadata": {
+      "debtId": 1787008911647,
+      "customerName": "Moises",
+      "paidAmount": 0,
+      "remainingAmount": 2000
+    },
+    "date": "2026-08-17T23:21:51.463Z"
+  },
+  {
+    "id": 1787009435816,
+    "type": "success",
+    "entity": "cash",
+    "message": "Movimiento revertido: venta por RD$3000.00",
+    "metadata": {
+      "transactionId": 1786082346910,
+      "revertedType": "sale"
+    },
+    "date": "2026-08-17T23:30:34.953Z"
+  },
+  {
+    "id": 1787009444262,
+    "type": "success",
+    "entity": "cash",
+    "message": "Movimiento revertido: venta por RD$1500.00",
+    "metadata": {
+      "transactionId": 1787008704317,
+      "revertedType": "sale"
+    },
+    "date": "2026-08-17T23:30:43.352Z"
+  },
+  {
+    "id": 1787009451782,
+    "type": "success",
+    "entity": "cart",
+    "message": "Agregado al carrito: Munchies Lil Ripper (Sativa)",
+    "metadata": {
+      "productId": 1786081160568,
+      "quantity": 1
+    },
+    "date": "2026-08-17T23:30:50.869Z"
+  },
+  {
+    "id": 1787009463823,
+    "type": "success",
+    "entity": "debt",
+    "message": "Venta fiada a Roid: RD$500.00 pendiente",
+    "metadata": {
+      "debtId": 1787009463479,
+      "customerName": "Roid",
+      "paidAmount": 1000,
+      "remainingAmount": 500
+    },
+    "date": "2026-08-17T23:31:03.381Z"
+  },
+  {
+    "id": 1787009466832,
+    "type": "success",
+    "entity": "cart",
+    "message": "Agregado al carrito: Juicy Kush (Sativa)",
+    "metadata": {
+      "productId": 1786081226553,
+      "quantity": 1
+    },
+    "date": "2026-08-17T23:31:05.958Z"
+  },
+  {
+    "id": 1787009496616,
+    "type": "success",
+    "entity": "debt",
+    "message": "Venta fiada a Ale: RD$3000.00 pendiente",
+    "metadata": {
+      "debtId": 1787009496394,
+      "customerName": "Ale",
+      "paidAmount": 0,
+      "remainingAmount": 3000
+    },
+    "date": "2026-08-17T23:31:36.109Z"
+  },
+  {
+    "id": 1787009526964,
+    "type": "success",
+    "entity": "cash",
+    "message": "Egreso registrado en caja",
+    "metadata": {
+      "transactionId": 1787009527123,
+      "amount": 500
+    },
+    "date": "2026-08-17T23:32:06.250Z"
+  },
+  {
+    "id": 1787013098172,
+    "type": "success",
+    "entity": "debt",
+    "message": "Abono de Roid: RD$500.00",
+    "metadata": {
+      "debtId": 1787009463479,
+      "paymentId": 1787013098929,
+      "remainingAmount": 0
+    },
+    "date": "2026-08-18T00:31:38.047Z"
+  },
+  {
+    "id": 1787013184434,
+    "type": "success",
+    "entity": "cart",
+    "message": "Agregado al carrito: Dazed AiBlenz (Indica)",
+    "metadata": {
+      "productId": 1786081085975,
+      "quantity": 1
+    },
+    "date": "2026-08-18T00:33:03.489Z"
+  },
+  {
+    "id": 1787013186380,
+    "type": "success",
+    "entity": "sale",
+    "message": "Venta registrada por RD$1700.00",
+    "metadata": {
+      "transactionId": 1787013187261
+    },
+    "date": "2026-08-18T00:33:06.339Z"
+  },
+  {
+    "id": 1787013193892,
+    "type": "success",
+    "entity": "cash",
+    "message": "Movimiento revertido: venta por RD$1700.00",
+    "metadata": {
+      "transactionId": 1787013187261,
+      "revertedType": "sale"
+    },
+    "date": "2026-08-18T00:33:13.101Z"
+  },
+  {
+    "id": 1787013575163,
+    "type": "success",
+    "entity": "cart",
+    "message": "Agregado al carrito: Modus Breeezt Blend (Indica)",
+    "metadata": {
+      "productId": 1786081342274,
+      "quantity": 1
+    },
+    "date": "2026-08-18T00:39:34.959Z"
+  }
+]
