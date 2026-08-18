@@ -3388,11 +3388,35 @@ button .material-symbols-outlined {
 
 .debt-stat-card {
   display: grid;
-  gap: 5px;
+  gap: 8px;
   padding: 14px;
 }
 
-.debt-stat-card span {
+.debt-stat-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.debt-stat-label .material-symbols-outlined {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 10px;
+  background: #eef8f1;
+  color: #0d6b3a;
+  font-size: 1rem;
+}
+
+.debt-stat-card.warning .debt-stat-label .material-symbols-outlined {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.debt-stat-label span:last-child {
   color: var(--text-3);
   font-size: 0.72rem;
   font-weight: 800;
@@ -3423,8 +3447,181 @@ button .material-symbols-outlined {
 
 .debt-client-card {
   display: grid;
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.debt-client-card.pending {
+  border-color: #f5c48f;
+}
+
+.debt-client-card.paid {
+  border-color: #bde7ca;
+}
+
+.debt-client-card.expanded {
+  box-shadow: 0 18px 42px rgba(8, 47, 26, 0.12);
+}
+
+.debt-client-toggle {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 38px;
   gap: 12px;
+  align-items: center;
   padding: 14px;
+  border: 0;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fcf9 100%);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.debt-client-toggle:hover {
+  background: #f5fbf7;
+}
+
+.debt-client-main,
+.debt-client-amount,
+.debt-client-meta {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.debt-client-identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.debt-client-avatar {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 14px;
+  background: #fff7ed;
+  color: #c2410c;
+  font-size: 1.28rem;
+}
+
+.debt-client-card.paid .debt-client-avatar {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.debt-client-kicker,
+.debt-client-amount small,
+.debt-client-meta div span,
+.debt-client-stats span {
+  color: var(--text-3);
+  font-size: 0.7rem;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.debt-client-name {
+  color: var(--text);
+  font-size: 1.02rem;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.debt-client-summary {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.debt-client-amount {
+  justify-items: end;
+}
+
+.debt-client-amount strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #0f5130;
+  font-size: 1.02rem;
+  line-height: 1;
+}
+
+.debt-client-amount strong .material-symbols-outlined {
+  color: currentColor;
+  font-size: 1rem;
+}
+
+.debt-client-card.pending .debt-client-amount strong {
+  color: #9a3412;
+}
+
+.debt-expand-icon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: #eef8f1;
+  color: #0d6b3a;
+  transition: transform 160ms ease, background-color 160ms ease;
+}
+
+.debt-client-card.expanded .debt-expand-icon {
+  background: #0d6b3a;
+  color: #ffffff;
+  transform: rotate(180deg);
+}
+
+.debt-client-details {
+  display: grid;
+  gap: 12px;
+  padding: 0 14px 14px;
+  animation: debtReveal 180ms ease both;
+}
+
+.debt-client-meta {
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  padding: 11px 12px;
+  border-radius: 13px;
+  background: #f7fbf8;
+  border: 1px solid #dceee2;
+}
+
+.debt-client-meta > .material-symbols-outlined {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: #e7f7ed;
+  color: #0d6b3a;
+  font-size: 1.12rem;
+}
+
+.debt-client-meta strong {
+  color: var(--text-2);
+  font-size: 0.86rem;
+}
+
+@keyframes debtReveal {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .debt-client-head {
@@ -3440,8 +3637,7 @@ button .material-symbols-outlined {
   min-width: 0;
 }
 
-.debt-client-head span,
-.debt-client-stats span {
+.debt-client-head span {
   color: var(--text-3);
   font-size: 0.72rem;
   font-weight: 800;
@@ -3465,10 +3661,15 @@ button .material-symbols-outlined {
   min-height: 30px;
   display: inline-flex;
   align-items: center;
+  gap: 5px;
   padding: 0 11px;
   border-radius: 999px;
   font-size: 0.72rem;
   font-weight: 900;
+}
+
+.debt-status-pill .material-symbols-outlined {
+  font-size: 1rem;
 }
 
 .debt-status-pill.pending {
@@ -3491,11 +3692,22 @@ button .material-symbols-outlined {
 
 .debt-client-stats div {
   display: grid;
-  gap: 4px;
+  gap: 5px;
   padding: 10px;
   border-radius: 13px;
   background: #f6fbf6;
   border: 1px solid #d6eadb;
+}
+
+.debt-stat-mini-icon {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  background: #eaf7ef;
+  color: #0d6b3a;
+  font-size: 1rem;
 }
 
 .debt-client-stats strong {
@@ -3543,6 +3755,21 @@ button .material-symbols-outlined {
   font-size: 0.92rem;
 }
 
+.debt-item-top b {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.debt-item-top b .material-symbols-outlined {
+  color: #0d6b3a;
+  font-size: 1rem;
+}
+
+.debt-item:not(.paid) .debt-item-top b .material-symbols-outlined {
+  color: #c2410c;
+}
+
 .debt-item-top span,
 .debt-item-top em,
 .debt-products {
@@ -3557,10 +3784,11 @@ button .material-symbols-outlined {
   gap: 6px;
 }
 
-.debt-payment-log span {
+.debt-payment-log > span {
   min-height: 26px;
   display: inline-flex;
   align-items: center;
+  gap: 5px;
   padding: 0 9px;
   border-radius: 999px;
   background: #ffffff;
@@ -3568,6 +3796,11 @@ button .material-symbols-outlined {
   color: var(--text-2);
   font-size: 0.72rem;
   font-weight: 800;
+}
+
+.debt-payment-log .material-symbols-outlined {
+  color: #059669;
+  font-size: 0.95rem;
 }
 
 .debt-payment-form {
@@ -3766,6 +3999,33 @@ button .material-symbols-outlined {
   .debt-client-head,
   .debt-item-top {
     display: grid;
+  }
+
+  .debt-client-toggle {
+    grid-template-columns: minmax(0, 1fr) 38px;
+    gap: 10px;
+    padding: 13px;
+  }
+
+  .debt-client-summary {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: space-between;
+    padding-top: 10px;
+    border-top: 1px solid #e2f0e7;
+  }
+
+  .debt-expand-icon {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .debt-client-amount {
+    justify-items: end;
+  }
+
+  .debt-client-name {
+    font-size: 1rem;
   }
 
   .debt-item-top div:last-child {

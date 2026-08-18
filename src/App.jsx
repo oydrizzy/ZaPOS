@@ -681,6 +681,7 @@ function DebtsModule({ debts, addDebtPayment, paymentSavingId }) {
   const [debtSearch, setDebtSearch] = useState('')
   const [debtPage, setDebtPage] = useState(1)
   const [paymentDrafts, setPaymentDrafts] = useState({})
+  const [expandedCustomers, setExpandedCustomers] = useState([])
 
   const debtTotals = debts.reduce(
     (acc, debt) => ({
@@ -769,6 +770,14 @@ function DebtsModule({ debts, addDebtPayment, paymentSavingId }) {
     })
   }
 
+  const toggleCustomer = (customerName) => {
+    setExpandedCustomers((current) =>
+      current.includes(customerName)
+        ? current.filter((name) => name !== customerName)
+        : [...current, customerName]
+    )
+  }
+
   return (
     <div className="debt-shell">
       <div className="debt-hero">
@@ -779,15 +788,24 @@ function DebtsModule({ debts, addDebtPayment, paymentSavingId }) {
 
       <div className="debt-stat-grid">
         <div className="debt-stat-card">
-          <span>Abonado</span>
+          <div className="debt-stat-label">
+            <span className="material-symbols-outlined">payments</span>
+            <span>Abonado</span>
+          </div>
           <strong>{money(debtTotals.paid)}</strong>
         </div>
         <div className="debt-stat-card">
-          <span>Clientes</span>
+          <div className="debt-stat-label">
+            <span className="material-symbols-outlined">groups</span>
+            <span>Clientes</span>
+          </div>
           <strong>{customers.length}</strong>
         </div>
         <div className="debt-stat-card warning">
-          <span>Deudas abiertas</span>
+          <div className="debt-stat-label">
+            <span className="material-symbols-outlined">pending_actions</span>
+            <span>Deudas abiertas</span>
+          </div>
           <strong>{debtTotals.open}</strong>
         </div>
       </div>
@@ -811,35 +829,82 @@ function DebtsModule({ debts, addDebtPayment, paymentSavingId }) {
           {filteredCustomers.length === 0 && (
             <div className="empty-state">No hay deudas registradas</div>
           )}
-          {debtPagination.items.map((customer) => (
-            <article key={customer.name} className="debt-client-card">
-              <div className="debt-client-head">
-                <div>
-                  <span>Cliente</span>
-                  <strong>{customer.name}</strong>
-                  <small>Más comprado: {customer.topProduct}</small>
-                </div>
-                <div className={`debt-status-pill ${customer.totalPending > 0 ? 'pending' : 'paid'}`}>
-                  {customer.totalPending > 0 ? 'Pendiente' : 'Pagado'}
-                </div>
-              </div>
+          {debtPagination.items.map((customer) => {
+            const isExpanded = expandedCustomers.includes(customer.name)
+            const hasPending = customer.totalPending > 0
+            return (
+              <article
+                key={customer.name}
+                className={`debt-client-card ${isExpanded ? 'expanded' : 'collapsed'} ${hasPending ? 'pending' : 'paid'}`}
+              >
+                <button
+                  className="debt-client-toggle"
+                  type="button"
+                  onClick={() => toggleCustomer(customer.name)}
+                  aria-expanded={isExpanded}
+                >
+                  <div className="debt-client-identity">
+                    <span className="material-symbols-outlined debt-client-avatar">
+                      {hasPending ? 'person_alert' : 'verified_user'}
+                    </span>
+                    <div className="debt-client-main">
+                      <span className="debt-client-kicker">
+                        {customer.debts.length} cuenta{customer.debts.length === 1 ? '' : 's'}
+                      </span>
+                      <strong className="debt-client-name">{customer.name}</strong>
+                    </div>
+                  </div>
 
-              <div className="debt-client-stats">
+                  <div className="debt-client-summary">
+                    <span className={`debt-status-pill ${hasPending ? 'pending' : 'paid'}`}>
+                      <span className="material-symbols-outlined">
+                        {hasPending ? 'schedule' : 'check_circle'}
+                      </span>
+                      {hasPending ? 'Pendiente' : 'Pagado'}
+                    </span>
+                    <div className="debt-client-amount">
+                      <small>Debe</small>
+                      <strong>
+                        <span className="material-symbols-outlined">account_balance_wallet</span>
+                        {money(customer.totalPending)}
+                      </strong>
+                    </div>
+                  </div>
+
+                  <span className="material-symbols-outlined debt-expand-icon">
+                    {isExpanded ? 'expand_less' : 'expand_more'}
+                  </span>
+                </button>
+
+                {isExpanded && (
+                  <div className="debt-client-details">
+                    <div className="debt-client-meta">
+                      <span className="material-symbols-outlined">local_fire_department</span>
+                      <div>
+                        <span>Más comprado</span>
+                        <strong>{customer.topProduct}</strong>
+                      </div>
+                    </div>
+
+                    <div className="debt-client-stats">
                 <div>
+                  <span className="material-symbols-outlined debt-stat-mini-icon">shopping_bag</span>
                   <span>Total gastado</span>
                   <strong>{money(customer.totalSpent)}</strong>
                 </div>
                 <div>
+                  <span className="material-symbols-outlined debt-stat-mini-icon">add_card</span>
                   <span>Abonado</span>
                   <strong>{money(customer.totalPaid)}</strong>
                 </div>
                 <div>
+                  <span className="material-symbols-outlined debt-stat-mini-icon">request_quote</span>
                   <span>Debe</span>
                   <strong>{money(customer.totalPending)}</strong>
                 </div>
-              </div>
+                    </div>
 
-              <div className="debt-list">
+                    <div className="debt-list">
                 {customer.debts.map((debt) => {
                   const draft = paymentDrafts[debt.id] || { amount: '', note: '', paymentMethod: 'cash' }
                   const remaining = Number(debt.remainingAmount || 0)
@@ -854,7 +919,12 @@ function DebtsModule({ debts, addDebtPayment, paymentSavingId }) {
                         </div>
                         <div>
                           <em>Pagado {money(debt.paidAmount)}</em>
-                          <b>{isPaid ? 'Liquidada' : `Falta ${money(remaining)}`}</b>
+                          <b>
+                            <span className="material-symbols-outlined">
+                              {isPaid ? 'check_circle' : 'schedule'}
+                            </span>
+                            {isPaid ? 'Liquidada' : `Falta ${money(remaining)}`}
+                          </b>
                         </div>
                       </div>
 
@@ -866,6 +936,7 @@ function DebtsModule({ debts, addDebtPayment, paymentSavingId }) {
                         <div className="debt-payment-log">
                           {debt.payments.map((payment) => (
                             <span key={payment.id}>
+                              <span className="material-symbols-outlined">check_circle</span>
                               {money(payment.amount)} · {new Date(payment.date).toLocaleDateString()}
                             </span>
                           ))}
@@ -917,9 +988,12 @@ function DebtsModule({ debts, addDebtPayment, paymentSavingId }) {
                     </div>
                   )
                 })}
-              </div>
-            </article>
-          ))}
+                    </div>
+                  </div>
+                )}
+              </article>
+            )
+          })}
         </div>
 
         <Pagination
