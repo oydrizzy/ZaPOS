@@ -157,6 +157,7 @@ function GramFilter({ value, options, onChange, fullWidth = false }) {
         onClick={() => setOpen((current) => !current)}
         aria-haspopup="listbox"
         aria-expanded={open}
+        aria-label={`Filtro actual: ${value}`}
       >
         <span className="material-symbols-outlined">filter_list</span>
         <strong>{value}</strong>
@@ -200,9 +201,10 @@ function SmartSearch({
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           type="search"
+          aria-label={placeholder}
         />
         {value && (
-          <button type="button" onClick={() => onChange('')} aria-label="Limpiar busqueda">
+          <button type="button" onClick={() => onChange('')} aria-label="Limpiar búsqueda">
             <span className="material-symbols-outlined">close</span>
           </button>
         )}
@@ -580,7 +582,7 @@ function EstimatesModule({ products, cashSummary }) {
 
             <div className="estimate-focus">
               <div className="estimate-focus-head">
-                <img src={selectedRow.image} alt={selectedRow.name} />
+                <img src={selectedRow.image} alt={selectedRow.name} loading="lazy" decoding="async" />
                 <div>
                   <span>{selectedRow.size}</span>
                   <strong>{productTitle(selectedRow)}</strong>
@@ -637,7 +639,7 @@ function EstimatesModule({ products, cashSummary }) {
                 aria-expanded={isExpanded}
               >
                 <div className="estimate-product">
-                <img src={row.image} alt={row.name} />
+                <img src={row.image} alt={row.name} loading="lazy" decoding="async" />
                 <div>
                   <strong>{productTitle(row)}</strong>
                   <span>{row.stock} uds · {row.size}</span>
@@ -1592,6 +1594,7 @@ function App() {
         {/* -- VENTAS --------------------------------------- */}
         {activeTab === 'ventas' && (
           <>
+            <div className="sales-workspace">
             {/* Stats */}
             <div className="stats-row">
               <div className="stat-card">
@@ -1605,7 +1608,7 @@ function App() {
             </div>
 
             {/* Product list */}
-            <div>
+            <div className="sales-products-panel">
               <div className="section-head" style={{ marginBottom: 14 }}>
                 <div className="section-title-row">
                   <span className="material-symbols-outlined">storefront</span>
@@ -1630,7 +1633,7 @@ function App() {
                 {salesPagination.items.map((product) => (
                   <li key={product.id} className="product-item product-unified-card">
                     <div className="inv-card-img-wrap">
-                      <img className="inv-card-img" src={product.image} alt={product.name} />
+                      <img className="inv-card-img" src={product.image} alt={product.name} loading="lazy" decoding="async" />
                       <span className={`stock-dot stock-${stockLevel(product.stock)}`} />
                     </div>
 
@@ -1661,6 +1664,7 @@ function App() {
                             onClick={() => addToCart(product)}
                             disabled={product.stock <= 0}
                             title="Agregar al carrito"
+                            aria-label={`Agregar ${productTitle(product)} al carrito`}
                           >
                             <span className="material-symbols-outlined">add_shopping_cart</span>
                           </button>
@@ -1704,17 +1708,17 @@ function App() {
                   {cart.map((item) => (
                     <li key={item.id} className="cart-item">
                       <div className="cart-preview">
-                        <img className="cart-thumb" src={item.image} alt={item.name} />
+                        <img className="cart-thumb" src={item.image} alt={item.name} loading="lazy" decoding="async" />
                         <div className="cart-info">
                           <span className="cart-name">{productTitle(item)}</span>
                           <span className="cart-qty-price">{item.quantity} × RD${item.salePrice.toFixed(2)}</span>
                         </div>
                       </div>
                       <div className="cart-actions">
-                        <button className="ghost-small edit-price" onClick={() => openPriceEdit(item)} title="Editar precio">
+                        <button className="ghost-small edit-price" onClick={() => openPriceEdit(item)} title="Editar precio" aria-label={`Editar precio de ${productTitle(item)}`}>
                           <span className="material-symbols-outlined">edit_square</span>
                         </button>
-                        <button className="ghost-small danger" onClick={() => removeFromCart(item)} title="Quitar">
+                        <button className="ghost-small danger" onClick={() => removeFromCart(item)} title="Quitar" aria-label={`Quitar ${productTitle(item)} del carrito`}>
                           <span className="material-symbols-outlined">remove_shopping_cart</span>
                         </button>
                       </div>
@@ -1794,6 +1798,7 @@ function App() {
                 {savingAction === 'checkout' ? 'Guardando...' : paymentMethod === 'debt' ? 'Registrar deuda' : 'Vender'}
               </button>
             </div>
+            </div>
           </>
         )}
 
@@ -1850,7 +1855,7 @@ function App() {
                       <li key={product.id} className="inv-card">
                         {/* Image */}
                         <div className="inv-card-img-wrap">
-                          <img className="inv-card-img" src={product.image} alt={product.name} />
+                          <img className="inv-card-img" src={product.image} alt={product.name} loading="lazy" decoding="async" />
                           <span className={`stock-dot stock-${level}`} />
                         </div>
 
@@ -1885,6 +1890,7 @@ function App() {
                                 className="inv-action-btn edit"
                                 onClick={() => openInventoryForm(product)}
                                 title="Editar"
+                                aria-label={`Editar ${productTitle(product)}`}
                               >
                                 <span className="material-symbols-outlined">edit_square</span>
                               </button>
@@ -1892,6 +1898,7 @@ function App() {
                                 className="inv-action-btn delete"
                                 onClick={() => openRemoveModal(product.id)}
                                 title="Eliminar"
+                                aria-label={`Eliminar ${productTitle(product)}`}
                               >
                                 <span className="material-symbols-outlined">delete_forever</span>
                               </button>
@@ -2040,7 +2047,7 @@ function App() {
 
                     {stockForm.image && (
                       <div className="image-preview">
-                        <img src={stockForm.image} alt="Vista previa" />
+                        <img src={stockForm.image} alt="Vista previa" loading="lazy" decoding="async" />
                         <div className="image-preview-info">
                           <span className="image-preview-name">{stockForm.imageName || 'Imagen seleccionada'}</span>
                           <span className="image-preview-ok">
