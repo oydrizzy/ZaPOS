@@ -198,13 +198,13 @@ function ProductImageModal({ src, name, onClose }) {
 }
 
 /* ── CostVisibilityToggle ────────────────────────────────── */
-function CostVisibilityToggle({ showCosts, onToggle }) {
+function CostVisibilityToggle({ showCosts, onChange }) {
   return (
     <div className="cost-toggle-bar">
       <button
         type="button"
         className={`cost-toggle-btn ${!showCosts ? 'costs-hidden' : ''}`}
-        onClick={onToggle}
+        onClick={() => onChange(!showCosts)}
         title={showCosts ? 'Ocultar precio de compra' : 'Mostrar precio de compra'}
       >
         <span className="material-symbols-outlined">
@@ -2213,14 +2213,16 @@ function App() {
                     <span>Cliente</span>
                     <button 
                       type="button" 
-                      className="input-with-icon" 
-                      style={{ width: '100%', textAlign: 'left', background: '#fff', border: '1px solid var(--border)', cursor: 'pointer', minHeight: 46, padding: '0 14px' }}
+                      className="customer-picker-btn"
                       onClick={() => setCustomerPickerOpen(true)}
                     >
-                      <span className="material-symbols-outlined" style={{ color: 'var(--text-3)' }}>person</span>
-                      <span className="form-input" style={{ display: 'flex', alignItems: 'center', background: 'transparent', border: 'none', padding: 0 }}>
-                        {debtSaleForm.customerName || <span style={{color: '#9ca3af'}}>Seleccionar cliente</span>}
-                      </span>
+                      <span className="material-symbols-outlined">person</span>
+                      {debtSaleForm.customerName ? (
+                        <span className="customer-picker-value">{debtSaleForm.customerName}</span>
+                      ) : (
+                        <span className="customer-picker-placeholder">Seleccionar cliente</span>
+                      )}
+                      <span className="material-symbols-outlined" style={{marginLeft: 'auto', fontSize: '1rem', color: 'var(--text-3)'}}>chevron_right</span>
                     </button>
                   </label>
                   <label className="form-group">

@@ -875,30 +875,42 @@ button .material-symbols-outlined {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: var(--radius-sm);
-  background: var(--surface-2);
-  border: 2px solid var(--border);
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: #ffffff;
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
   transition: var(--transition);
+}
+
+.cart-item:hover {
+  border-color: var(--border-strong);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.06);
 }
 
 .cart-preview {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   flex: 1;
   min-width: 0;
 }
 
 .cart-thumb {
-  width: 42px;
-  height: 42px;
-  border-radius: var(--radius-xs);
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
   object-fit: cover;
   background: var(--surface-3);
   flex-shrink: 0;
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
+  transition: transform 0.2s ease;
+}
+
+.cart-thumb-clickable:hover {
+  transform: scale(1.05);
+  cursor: pointer;
 }
 
 .cart-info {
@@ -908,7 +920,7 @@ button .material-symbols-outlined {
 }
 
 .cart-name {
-  font-size: 0.86rem;
+  font-size: 0.92rem;
   font-weight: 700;
   color: var(--text);
   white-space: nowrap;
@@ -917,8 +929,9 @@ button .material-symbols-outlined {
 }
 
 .cart-qty-price {
-  font-size: 0.78rem;
-  color: var(--text-3);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-2);
 }
 
 .empty-state {
@@ -1114,6 +1127,50 @@ button .material-symbols-outlined {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
+}
+
+/* ── Customer Picker Btn (FIAR) ──────────────────────────── */
+.customer-picker-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  min-height: 48px;
+  background: #ffffff;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: left;
+}
+
+.customer-picker-btn:hover {
+  border-color: var(--accent);
+}
+
+.customer-picker-btn:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  outline: none;
+}
+
+.customer-picker-btn > .material-symbols-outlined:first-child {
+  color: var(--text-3);
+  font-size: 1.2rem;
+}
+
+.customer-picker-value {
+  color: var(--text);
+  font-size: 0.93rem;
+  font-weight: 600;
+  flex: 1;
+}
+
+.customer-picker-placeholder {
+  color: var(--text-3);
+  font-size: 0.93rem;
+  flex: 1;
 }
 
 /* ── File Upload Zone ────────────────────────────────────── */
