@@ -1483,6 +1483,7 @@ function App() {
   const filteredSalesProducts = useMemo(
     () =>
       products.filter((product) => {
+        if (product.stock <= 0) return false
         const gramOk = salesGramFilter === 'Todos' || product.size === salesGramFilter
         const typeOk = salesTypeFilter === 'Todos' || (product.type || 'Hybrida') === salesTypeFilter
         return gramOk && typeOk && productMatches(product, salesSearch)
