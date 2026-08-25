@@ -74,6 +74,431 @@ function paginate(items, page, pageSize) {
   }
 }
 
+function formatDate(dateStr) {
+  if (!dateStr) return ''
+  return new Date(dateStr).toLocaleDateString('es-DO', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  })
+}
+
+
+
+/* ── ConfirmDialog — Componente único de confirmación ──── */
+function ConfirmDialog({
+  open,
+  icon = 'warning',
+  iconBg = '#fff1f2',
+  iconColor = 'var(--danger)',
+  title,
+  body,
+  children,
+  cancelLabel = 'Cancelar',
+  confirmLabel = 'Confirmar',
+  confirmClass = 'danger-btn',
+  onCancel,
+  onConfirm,
+  isLoading = false,
+}) {
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e) => { if (e.key === 'Escape' && !isLoading) onCancel?.() }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [open, isLoading, onCancel])
+
+  useEffect(() => {
+    if (open) document.body.style.overflow = 'hidden'
+    else document.body.style.overflow = ''
+    return () => { document.body.style.overflow = '' }
+  }, [open])
+
+  if (!open) return null
+
+  return (
+    <div className="modal-backdrop" onClick={() => !isLoading && onCancel?.()}>
+      <div className="confirm-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-icon-wrap" style={{ background: iconBg }}>
+          <span className="material-symbols-outlined modal-icon" style={{ color: iconColor }}>
+            {icon}
+          </span>
+        </div>
+        {title && <h3>{title}</h3>}
+        {body && <p>{body}</p>}
+        {children}
+        <div className="confirm-actions">
+          <button type="button" className="ghost-btn" onClick={onCancel} disabled={isLoading}>
+            {cancelLabel}
+          </button>
+          <button type="button" className={confirmClass} onClick={onConfirm} disabled={isLoading}>
+            {isLoading ? 'Procesando...' : confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ── EmptyState — Estado vacío consistente ──────────────── */
+function EmptyState({ icon = 'inbox', title, subtitle }) {
+  return (
+    <div className="empty-state-enhanced">
+      <div className="empty-state-icon">
+        <span className="material-symbols-outlined">{icon}</span>
+      </div>
+      {title && <p className="empty-state-title">{title}</p>}
+      {subtitle && <p className="empty-state-subtitle">{subtitle}</p>}
+    </div>
+  )
+}
+
+/* ── StatusBadge ─────────────────────────────────────────── */
+function StatusBadge({ status }) {
+  const map = {
+    pending:  { icon: 'schedule',      label: 'Pendiente', cls: 'status-pending' },
+    partial:  { icon: 'incomplete_circle', label: 'Parcial', cls: 'status-partial' },
+    paid:     { icon: 'check_circle',  label: 'Pagada',    cls: 'status-paid' },
+  }
+  const info = map[status] || map.pending
+  return (
+    <span className={`status-badge ${info.cls}`}>
+      <span className="material-symbols-outlined">{info.icon}</span>
+      {info.label}
+    </span>
+  )
+}
+
+/* ── ProductImageModal — Galería de imagen de producto ───── */
+function ProductImageModal({ src, name, onClose }) {
+  useEffect(() => {
+    if (!src) return
+    const onKey = (e) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', onKey)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.body.style.overflow = ''
+    }
+  }, [src, onClose])
+
+  if (!src) return null
+
+  return (
+    <div className="img-modal-overlay" onClick={onClose}>
+      <button className="img-modal-close" type="button" onClick={onClose} aria-label="Cerrar imagen">
+        <span className="material-symbols-outlined">close</span>
+      </button>
+      <div className="img-modal-content" onClick={(e) => e.stopPropagation()}>
+        <img className="img-modal-img" src={src} alt={name} />
+        {name && <p className="img-modal-name">{name}</p>}
+      </div>
+    </div>
+  )
+}
+
+/* ── CostVisibilityToggle ────────────────────────────────── */
+function CostVisibilityToggle({ showCosts, onToggle }) {
+  return (
+    <div className="cost-toggle-bar">
+      <button
+        type="button"
+        className={`cost-toggle-btn ${!showCosts ? 'costs-hidden' : ''}`}
+        onClick={onToggle}
+        title={showCosts ? 'Ocultar precio de compra' : 'Mostrar precio de compra'}
+      >
+        <span className="material-symbols-outlined">
+          {showCosts ? 'visibility' : 'visibility_off'}
+        </span>
+        {showCosts ? 'Ocultar costos' : 'Mostrar costos'}
+      </button>
+    </div>
+  )
+}
+
+/* ── CustomerPicker — Selector de clientes para FIAR ─────── */
+function CustomerPicker({ open, customers, selectedName, onSelect, onClose }) {
+  const [search, setSearch] = useState('')
+  const [showNewForm, setShowNewForm] = useState(false)
+  const [newName, setNewName] = useState('')
+
+  useEffect(() => {
+    if (!open) { setSearch(''); setShowNewForm(false); setNewName('') }
+  }, [open])
+
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', onKey)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.body.style.overflow = ''
+    }
+  }, [open, onClose])
+
+  if (!open) return null
+
+  const filtered = customers.filter((c) =>
+    normalizeText(c.name).includes(normalizeText(search))
+  )
+
+  const handleNewCustomer = (e) => {
+    e.preventDefault()
+    const name = newName.trim()
+    if (!name) return
+    onSelect(name)
+    onClose()
+  }
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="customer-picker-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="customer-picker-header">
+          <div className="customer-picker-title">
+            <span className="material-symbols-outlined">person_search</span>
+            <span>Seleccionar cliente</span>
+          </div>
+          <button className="customer-picker-close" type="button" onClick={onClose} aria-label="Cerrar">
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div className="customer-picker-search">
+          <label className="smart-search">
+            <span className="material-symbols-outlined">search</span>
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar cliente..."
+              type="search"
+              autoFocus
+            />
+            {search && (
+              <button type="button" onClick={() => setSearch('')}>
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            )}
+          </label>
+        </div>
+
+        <div className="customer-picker-list">
+          {filtered.length === 0 && search && (
+            <div className="customer-picker-empty">
+              <span className="material-symbols-outlined">search_off</span>
+              No encontramos clientes con ese nombre.
+            </div>
+          )}
+          {filtered.length === 0 && !search && customers.length === 0 && (
+            <div className="customer-picker-empty">
+              <span className="material-symbols-outlined">group</span>
+              Todavía no hay clientes registrados.
+            </div>
+          )}
+          {filtered.map((customer) => {
+            const isSelected = selectedName === customer.name
+            const hasPending = customer.totalPending > 0
+            return (
+              <button
+                key={customer.name}
+                type="button"
+                className={`customer-picker-item ${isSelected ? 'selected' : ''}`}
+                onClick={() => { onSelect(customer.name); onClose() }}
+              >
+                <div className="customer-picker-avatar">
+                  <span className="material-symbols-outlined">
+                    {hasPending ? 'person_alert' : 'verified_user'}
+                  </span>
+                </div>
+                <div className="customer-picker-info">
+                  <span className="customer-picker-name">{customer.name}</span>
+                  <span className="customer-picker-meta">
+                    {customer.debts.length} cuenta{customer.debts.length !== 1 ? 's' : ''}
+                  </span>
+                </div>
+                {hasPending ? (
+                  <span className="customer-picker-debt">
+                    Debe {money(customer.totalPending)}
+                  </span>
+                ) : (
+                  <span className="customer-picker-debt paid">Al día</span>
+                )}
+                {isSelected && (
+                  <span className="customer-picker-check">
+                    <span className="material-symbols-outlined">check</span>
+                  </span>
+                )}
+              </button>
+            )
+          })}
+        </div>
+
+        {showNewForm ? (
+          <form className="customer-picker-new-form" onSubmit={handleNewCustomer}>
+            <label htmlFor="new-customer-name">Nombre del nuevo cliente</label>
+            <div className="input-with-icon">
+              <span className="material-symbols-outlined">person_add</span>
+              <input
+                id="new-customer-name"
+                className="form-input"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                placeholder="Ej. Richardson"
+                autoFocus
+                required
+              />
+            </div>
+            <div className="confirm-actions">
+              <button type="button" className="ghost-btn" onClick={() => setShowNewForm(false)}>
+                Cancelar
+              </button>
+              <button type="submit" className="primary-btn">
+                <span className="material-symbols-outlined">check</span>
+                Usar este nombre
+              </button>
+            </div>
+          </form>
+        ) : (
+          <div className="customer-picker-footer">
+            <button
+              type="button"
+              className="customer-picker-new"
+              onClick={() => setShowNewForm(true)}
+            >
+              <span className="material-symbols-outlined">add_circle</span>
+              + Nuevo cliente
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/* ── PaymentModal — Registrar abono a una cuenta ─────────── */
+function PaymentModal({ open, debt, onClose, onSubmit, isSaving }) {
+  const [amount, setAmount] = useState('')
+  const [paymentMethod, setPaymentMethod] = useState('cash')
+  const [note, setNote] = useState('')
+
+  useEffect(() => {
+    if (!open) { setAmount(''); setPaymentMethod('cash'); setNote('') }
+  }, [open])
+
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e) => { if (e.key === 'Escape' && !isSaving) onClose() }
+    document.addEventListener('keydown', onKey)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.body.style.overflow = ''
+    }
+  }, [open, isSaving, onClose])
+
+  if (!open || !debt) return null
+
+  const remaining = Number(debt.remainingAmount || 0)
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    onSubmit(debt, { amount, paymentMethod, note })
+  }
+
+  return (
+    <div className="modal-backdrop" onClick={() => !isSaving && onClose()}>
+      <div className="payment-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="payment-modal-header">
+          <div className="payment-modal-title">
+            <span className="payment-modal-account">
+              Cuenta #{String(debt.id).slice(-5)}
+            </span>
+            <span className="payment-modal-customer">{debt.customerName}</span>
+          </div>
+          <button
+            type="button"
+            className="payment-modal-close"
+            onClick={onClose}
+            disabled={isSaving}
+            aria-label="Cerrar"
+          >
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div className="payment-modal-balance">
+          <span className="payment-modal-balance-label">Saldo pendiente</span>
+          <span className="payment-modal-balance-amount">{money(remaining)}</span>
+        </div>
+
+        <form className="payment-modal-form" onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label className="form-group-label">Monto a abonar</label>
+            <div className="input-with-icon">
+              <span className="material-symbols-outlined">payments</span>
+              <input
+                className="form-input"
+                type="number"
+                min="0.01"
+                max={remaining}
+                step="0.01"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder={`Máx ${money(remaining)}`}
+                disabled={isSaving}
+                autoFocus
+                required
+              />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label className="form-group-label">Método de pago</label>
+            <div className="input-with-icon">
+              <span className="material-symbols-outlined">account_balance_wallet</span>
+              <select
+                className="form-select"
+                value={paymentMethod}
+                onChange={(e) => setPaymentMethod(e.target.value)}
+                disabled={isSaving}
+              >
+                <option value="cash">Efectivo</option>
+                <option value="transfer">Transferencia</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label className="form-group-label">Nota (opcional)</label>
+            <div className="input-with-icon">
+              <span className="material-symbols-outlined">edit_note</span>
+              <input
+                className="form-input"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="Ej. Pago parcial"
+                disabled={isSaving}
+              />
+            </div>
+          </div>
+
+          <div className="payment-modal-actions">
+            <button type="button" className="ghost-btn" onClick={onClose} disabled={isSaving}>
+              Cancelar
+            </button>
+            <button type="submit" className="primary-btn" disabled={isSaving}>
+              <span className="material-symbols-outlined">
+                {isSaving ? 'hourglass_empty' : 'add_card'}
+              </span>
+              {isSaving ? 'Registrando...' : 'Registrar abono'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
 function LoginScreen({ form, setForm, onLogin, isSubmitting }) {
   return (
     <div className="plain-auth-screen">
@@ -393,9 +818,11 @@ function CashModule({ transactions, summary, movementForm, setMovementForm, addC
         />
 
         {recentTransactions.length === 0 ? (
-          <div className="empty-state">
-            {transactions.length === 0 ? 'Todavía no hay movimientos registrados' : 'No hay movimientos con ese filtro'}
-          </div>
+          <EmptyState
+            icon={transactions.length === 0 ? 'receipt_long' : 'search_off'}
+            title={transactions.length === 0 ? 'Sin movimientos aún' : 'Sin resultados'}
+            subtitle={transactions.length === 0 ? 'Registra tu primer movimiento o venta.' : 'Intenta con otro término de búsqueda.'}
+          />
         ) : (
           <ul className="cash-log-list">
             {cashPagination.items.map((entry) => (
@@ -430,31 +857,27 @@ function CashModule({ transactions, summary, movementForm, setMovementForm, addC
         />
       </div>
 
-      {revertTarget && (
-        <div className="modal-backdrop" onClick={closeRevertModal}>
-          <div className="confirm-modal revert-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-icon-wrap revert-icon-wrap">
-              <span className="material-symbols-outlined modal-icon">undo</span>
-            </div>
-            <h3>Revertir movimiento</h3>
-            <p>Esto deshará el movimiento y dejará caja, stock y deudas como estaban antes.</p>
-            <div className="revert-summary">
-              <span>{getEntryLabel(revertTarget)}</span>
-              <strong>{money(revertTarget.amount)}</strong>
-              {revertTarget.note && <small>{revertTarget.note}</small>}
-            </div>
-            <div className="confirm-actions">
-              <button type="button" className="ghost-btn" onClick={closeRevertModal} disabled={isReverting}>
-                Cancelar
-              </button>
-              <button type="button" className="revert-confirm-btn" onClick={confirmRevert} disabled={isReverting}>
-                <span className="material-symbols-outlined">{isReverting ? 'hourglass_empty' : 'undo'}</span>
-                {isReverting ? 'Revirtiendo' : 'Revertir'}
-              </button>
-            </div>
+      <ConfirmDialog
+        open={!!revertTarget}
+        icon="undo"
+        iconBg="#ecfdf3"
+        iconColor="var(--success)"
+        title="Revertir movimiento"
+        onCancel={closeRevertModal}
+        onConfirm={confirmRevert}
+        confirmLabel="Revertir"
+        confirmClass="revert-confirm-btn"
+        isLoading={isReverting}
+      >
+        <p>Esto deshará el movimiento y dejará caja, stock y deudas como estaban antes.</p>
+        {revertTarget && (
+          <div className="revert-summary">
+            <span>{getEntryLabel(revertTarget)}</span>
+            <strong>{money(revertTarget.amount)}</strong>
+            {revertTarget.note && <small>{revertTarget.note}</small>}
           </div>
-        </div>
-      )}
+        )}
+      </ConfirmDialog>
     </div>
   )
 }
@@ -679,11 +1102,13 @@ function EstimatesModule({ products, cashSummary }) {
   )
 }
 
-function DebtsModule({ debts, addDebtPayment, paymentSavingId }) {
+function DebtsModule({ debts, customers, addDebtPayment, paymentSavingId }) {
   const [debtSearch, setDebtSearch] = useState('')
   const [debtPage, setDebtPage] = useState(1)
-  const [paymentDrafts, setPaymentDrafts] = useState({})
   const [expandedCustomers, setExpandedCustomers] = useState([])
+  const [expandedHistories, setExpandedHistories] = useState([])
+  const [paymentModal, setPaymentModal] = useState({ open: false, debt: null })
+  const [isSavingPayment, setIsSavingPayment] = useState(false)
 
   const debtTotals = debts.reduce(
     (acc, debt) => ({
@@ -694,43 +1119,6 @@ function DebtsModule({ debts, addDebtPayment, paymentSavingId }) {
     }),
     { total: 0, paid: 0, pending: 0, open: 0 }
   )
-
-  const customers = useMemo(() => {
-    const map = new Map()
-    debts.forEach((debt) => {
-      const name = debt.customerName || 'Cliente sin nombre'
-      if (!map.has(name)) {
-        map.set(name, {
-          name,
-          debts: [],
-          totalSpent: 0,
-          totalPaid: 0,
-          totalPending: 0,
-          productCounts: new Map(),
-        })
-      }
-      const customer = map.get(name)
-      customer.debts.push(debt)
-      customer.totalSpent += Number(debt.totalAmount || 0)
-      customer.totalPaid += Number(debt.paidAmount || 0)
-      customer.totalPending += Number(debt.remainingAmount || 0)
-      ;(debt.items || []).forEach((item) => {
-        const key = productTitle(item)
-        customer.productCounts.set(key, (customer.productCounts.get(key) || 0) + Number(item.quantity || 0))
-      })
-    })
-
-    return Array.from(map.values())
-      .map((customer) => {
-        const topProduct = Array.from(customer.productCounts.entries()).sort((a, b) => b[1] - a[1])[0]
-        return {
-          ...customer,
-          topProduct: topProduct ? `${topProduct[0]} (${topProduct[1]} uds)` : 'Sin productos',
-          debts: [...customer.debts].sort((a, b) => b.id - a.id),
-        }
-      })
-      .sort((a, b) => b.totalPending - a.totalPending)
-  }, [debts])
 
   const filteredCustomers = customers.filter((customer) => {
     const needle = normalizeText(debtSearch)
@@ -746,38 +1134,35 @@ function DebtsModule({ debts, addDebtPayment, paymentSavingId }) {
     setDebtPage(1)
   }, [debtSearch, debts.length])
 
-  const setDraft = (debtId, patch) => {
-    setPaymentDrafts((current) => ({
-      ...current,
-      [debtId]: {
-        amount: '',
-        note: '',
-        paymentMethod: 'cash',
-        ...(current[debtId] || {}),
-        ...patch,
-      },
-    }))
-  }
-
-  const submitPayment = (event, debt) => {
-    event.preventDefault()
-    const draft = paymentDrafts[debt.id] || {}
-    addDebtPayment(debt, draft).then((ok) => {
-      if (ok) {
-        setPaymentDrafts((current) => ({
-          ...current,
-          [debt.id]: { amount: '', note: '', paymentMethod: draft.paymentMethod || 'cash' },
-        }))
-      }
-    })
-  }
-
   const toggleCustomer = (customerName) => {
     setExpandedCustomers((current) =>
       current.includes(customerName)
         ? current.filter((name) => name !== customerName)
         : [...current, customerName]
     )
+  }
+
+  const toggleHistory = (debtId) => {
+    setExpandedHistories((current) =>
+      current.includes(debtId)
+        ? current.filter((id) => id !== debtId)
+        : [...current, debtId]
+    )
+  }
+
+  const openPaymentModal = (debt) => {
+    setPaymentModal({ open: true, debt })
+  }
+
+  const closePaymentModal = () => {
+    if (!isSavingPayment) setPaymentModal({ open: false, debt: null })
+  }
+
+  const handlePaymentSubmit = async (debt, draft) => {
+    setIsSavingPayment(true)
+    const ok = await addDebtPayment(debt, draft)
+    setIsSavingPayment(false)
+    if (ok) setPaymentModal({ open: false, debt: null })
   }
 
   return (
@@ -829,7 +1214,11 @@ function DebtsModule({ debts, addDebtPayment, paymentSavingId }) {
 
         <div className="debt-client-list">
           {filteredCustomers.length === 0 && (
-            <div className="empty-state">No hay deudas registradas</div>
+            <EmptyState
+              icon={debts.length === 0 ? 'handshake' : 'search_off'}
+              title={debts.length === 0 ? 'Sin deudas registradas' : 'Sin resultados'}
+              subtitle={debts.length === 0 ? 'Usa el método "Fiar" al vender para registrar una deuda.' : 'Intenta con otro nombre o término.'}
+            />
           )}
           {debtPagination.items.map((customer) => {
             const isExpanded = expandedCustomers.includes(customer.name)
@@ -880,116 +1269,119 @@ function DebtsModule({ debts, addDebtPayment, paymentSavingId }) {
 
                 {isExpanded && (
                   <div className="debt-client-details">
-                    <div className="debt-client-meta">
-                      <span className="material-symbols-outlined">local_fire_department</span>
-                      <div>
-                        <span>Más comprado</span>
-                        <strong>{customer.topProduct}</strong>
+                    {/* Resumen de cliente */}
+                    <div className="debt-client-summary-stats">
+                      <div className="debt-client-summary-stat">
+                        <span className="debt-client-summary-stat-label">Total</span>
+                        <span className="debt-client-summary-stat-value">{money(customer.totalSpent)}</span>
+                      </div>
+                      <div className="debt-client-summary-stat">
+                        <span className="debt-client-summary-stat-label">Abonado</span>
+                        <span className="debt-client-summary-stat-value">{money(customer.totalPaid)}</span>
+                      </div>
+                      <div className={`debt-client-summary-stat ${hasPending ? 'stat-pending' : ''}`}>
+                        <span className="debt-client-summary-stat-label">Pendiente</span>
+                        <span className="debt-client-summary-stat-value">{money(customer.totalPending)}</span>
                       </div>
                     </div>
 
-                    <div className="debt-client-stats">
-                <div>
-                  <span className="material-symbols-outlined debt-stat-mini-icon">shopping_bag</span>
-                  <span>Total gastado</span>
-                  <strong>{money(customer.totalSpent)}</strong>
-                </div>
-                <div>
-                  <span className="material-symbols-outlined debt-stat-mini-icon">add_card</span>
-                  <span>Abonado</span>
-                  <strong>{money(customer.totalPaid)}</strong>
-                </div>
-                <div>
-                  <span className="material-symbols-outlined debt-stat-mini-icon">request_quote</span>
-                  <span>Debe</span>
-                  <strong>{money(customer.totalPending)}</strong>
-                </div>
-                    </div>
+                    {/* Cuentas independientes */}
+                    <div className="debt-accounts-list">
+                      {customer.debts.map((debt) => {
+                        const remaining = Number(debt.remainingAmount || 0)
+                        const isPaid = remaining <= 0
+                        const historyOpen = expandedHistories.includes(debt.id)
+                        const productsSummary = (debt.items || [])
+                          .map((item) => `${item.quantity}x ${productTitle(item)}`)
+                          .join(', ')
 
-                    <div className="debt-list">
-                {customer.debts.map((debt) => {
-                  const draft = paymentDrafts[debt.id] || { amount: '', note: '', paymentMethod: 'cash' }
-                  const remaining = Number(debt.remainingAmount || 0)
-                  const isPaid = remaining <= 0
-                  const isSavingPayment = paymentSavingId === debt.id
-                  return (
-                    <div key={debt.id} className={`debt-item ${isPaid ? 'paid' : ''}`}>
-                      <div className="debt-item-top">
-                        <div>
-                          <strong>{money(debt.totalAmount)}</strong>
-                          <span>{new Date(debt.date).toLocaleString()}</span>
-                        </div>
-                        <div>
-                          <em>Pagado {money(debt.paidAmount)}</em>
-                          <b>
-                            <span className="material-symbols-outlined">
-                              {isPaid ? 'check_circle' : 'schedule'}
-                            </span>
-                            {isPaid ? 'Liquidada' : `Falta ${money(remaining)}`}
-                          </b>
-                        </div>
-                      </div>
+                        let accountStatus = 'pending'
+                        if (isPaid) accountStatus = 'paid'
+                        else if (Number(debt.paidAmount || 0) > 0) accountStatus = 'partial'
 
-                      <small className="debt-products">
-                        {(debt.items || []).map((item) => `${item.quantity}x ${productTitle(item)}`).join(', ')}
-                      </small>
+                        return (
+                          <div key={debt.id} className={`debt-account-card ${isPaid ? 'account-paid' : ''}`}>
+                            <div className="debt-account-header">
+                              <div className="debt-account-id">
+                                <span className="debt-account-number">Cuenta #{String(debt.id).slice(-5)}</span>
+                                <span className="debt-account-date">{formatDate(debt.date)}</span>
+                              </div>
+                              <div className="debt-account-status">
+                                <StatusBadge status={accountStatus} />
+                              </div>
+                            </div>
 
-                      {debt.payments?.length > 0 && (
-                        <div className="debt-payment-log">
-                          {debt.payments.map((payment) => (
-                            <span key={payment.id}>
-                              <span className="material-symbols-outlined">check_circle</span>
-                              {money(payment.amount)} · {new Date(payment.date).toLocaleDateString()}
-                            </span>
-                          ))}
-                        </div>
-                      )}
+                            <div className="debt-account-stats">
+                              <div className="debt-account-stat">
+                                <span className="debt-account-stat-label">Total</span>
+                                <span className="debt-account-stat-value">{money(debt.totalAmount)}</span>
+                              </div>
+                              <div className="debt-account-stat">
+                                <span className="debt-account-stat-label">Abonado</span>
+                                <span className="debt-account-stat-value">{money(debt.paidAmount)}</span>
+                              </div>
+                              <div className={`debt-account-stat ${!isPaid ? 'pending' : ''}`}>
+                                <span className="debt-account-stat-label">Pendiente</span>
+                                <span className="debt-account-stat-value">{money(remaining)}</span>
+                              </div>
+                            </div>
 
-                      {!isPaid && (
-                        <form className="debt-payment-form" onSubmit={(event) => submitPayment(event, debt)}>
-                          <div className="input-with-icon">
-                            <span className="material-symbols-outlined">payments</span>
-                            <input
-                              className="form-input"
-                              type="number"
-                              min="0.01"
-                              max={remaining}
-                              step="0.01"
-                              value={draft.amount}
-                              onChange={(event) => setDraft(debt.id, { amount: event.target.value })}
-                              placeholder={`Max ${money(remaining)}`}
-                              disabled={isSavingPayment}
-                              required
-                            />
+                            {productsSummary && (
+                              <div className="debt-account-products">
+                                {productsSummary}
+                              </div>
+                            )}
+
+                            {/* Historial de pagos expandible */}
+                            {historyOpen && debt.payments?.length > 0 && (
+                              <div className="debt-account-history-panel">
+                                <div className="debt-account-history-title">Historial de abonos</div>
+                                <div className="debt-account-history-list">
+                                  {debt.payments.map((payment) => (
+                                    <div key={payment.id} className="debt-account-history-item">
+                                      <span className="debt-account-history-date">
+                                        {formatDate(payment.date)}
+                                      </span>
+                                      <span className="debt-account-history-amount">
+                                        +{money(payment.amount)}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="debt-account-actions">
+                              {debt.payments?.length > 0 && (
+                                <button
+                                  type="button"
+                                  className="debt-account-history-btn"
+                                  onClick={() => toggleHistory(debt.id)}
+                                >
+                                  <span className="material-symbols-outlined">history</span>
+                                  {historyOpen ? 'Ocultar' : `Ver ${debt.payments.length} abono${debt.payments.length !== 1 ? 's' : ''}`}
+                                </button>
+                              )}
+                              {!isPaid && (
+                                <button
+                                  type="button"
+                                  className="debt-account-pay-btn"
+                                  onClick={() => openPaymentModal(debt)}
+                                >
+                                  <span className="material-symbols-outlined">add_card</span>
+                                  Abonar
+                                </button>
+                              )}
+                              {isPaid && (
+                                <div style={{ flex: 1, textAlign: 'center', fontSize: '0.78rem', color: '#047857', fontWeight: 800 }}>
+                                  <span className="material-symbols-outlined" style={{ fontSize: '0.95rem', verticalAlign: 'middle' }}>check_circle</span>
+                                  {' '}Pagada completamente
+                                </div>
+                              )}
+                            </div>
                           </div>
-                          <select
-                            className="form-select debt-pay-method"
-                            value={draft.paymentMethod}
-                            onChange={(event) => setDraft(debt.id, { paymentMethod: event.target.value })}
-                            disabled={isSavingPayment}
-                          >
-                            <option value="cash">Efectivo</option>
-                            <option value="transfer">Transferencia</option>
-                          </select>
-                          <div className="input-with-icon debt-note-input">
-                            <span className="material-symbols-outlined">edit_note</span>
-                            <input
-                              className="form-input"
-                              value={draft.note}
-                              onChange={(event) => setDraft(debt.id, { note: event.target.value })}
-                              placeholder="Nota"
-                              disabled={isSavingPayment}
-                            />
-                          </div>
-                          <button className="primary-btn" type="submit" disabled={isSavingPayment}>
-                            <span className="material-symbols-outlined">{isSavingPayment ? 'hourglass_empty' : 'add_card'}</span>
-                            {isSavingPayment ? 'Registrando...' : 'Abonar'}
-                          </button>
-                        </form>
-                      )}
-                    </div>
-                  )
-                })}
+                        )
+                      })}
                     </div>
                   </div>
                 )}
@@ -1007,6 +1399,15 @@ function DebtsModule({ debts, addDebtPayment, paymentSavingId }) {
           onPageChange={setDebtPage}
         />
       </div>
+
+      {/* PaymentModal */}
+      <PaymentModal
+        open={paymentModal.open}
+        debt={paymentModal.debt}
+        onClose={closePaymentModal}
+        onSubmit={handlePaymentSubmit}
+        isSaving={isSavingPayment}
+      />
     </div>
   )
 }
@@ -1044,6 +1445,19 @@ function App() {
   const [confirmRemove, setConfirmRemove] = useState({ open: false, productId: null })
   const [priceEdit, setPriceEdit] = useState({ open: false, itemId: null, value: '' })
   const [savingAction, setSavingAction] = useState(null)
+  
+  // New States for phase 2 and 4
+  const [viewImage, setViewImage] = useState(null) // { src: string, name: string }
+  const [showCosts, setShowCosts] = useState(() => {
+    return localStorage.getItem('zapos_show_costs') !== 'false'
+  })
+  const [customerPickerOpen, setCustomerPickerOpen] = useState(false)
+
+  // Effect to persist showCosts
+  useEffect(() => {
+    localStorage.setItem('zapos_show_costs', showCosts)
+  }, [showCosts])
+
   const [stockForm, setStockForm] = useState({
     name: '',
     type: 'Hybrida',
@@ -1127,17 +1541,47 @@ function App() {
         }
         return acc
       },
-      {
-        salesTotal: 0,
-        incomeTotal: 0,
-        expenseTotal: 0,
-        registeredBalance: 0,
-        cashTotal: 0,
-        transferTotal: 0,
-        cashAvailable: 0,
-      }
+      { salesTotal: 0, cashTotal: 0, transferTotal: 0, cashAvailable: 0, incomeTotal: 0, expenseTotal: 0, registeredBalance: 0 }
     )
   }, [transactions])
+
+  const globalCustomers = useMemo(() => {
+    const map = new Map()
+    debts.forEach((debt) => {
+      const name = debt.customerName || 'Cliente sin nombre'
+      if (!map.has(name)) {
+        map.set(name, {
+          name,
+          debts: [],
+          totalSpent: 0,
+          totalPaid: 0,
+          totalPending: 0,
+          productCounts: new Map(),
+        })
+      }
+      const customer = map.get(name)
+      customer.debts.push(debt)
+      customer.totalSpent += Number(debt.totalAmount || 0)
+      customer.totalPaid += Number(debt.paidAmount || 0)
+      customer.totalPending += Number(debt.remainingAmount || 0)
+      ;(debt.items || []).forEach((item) => {
+        const key = productTitle(item)
+        customer.productCounts.set(key, (customer.productCounts.get(key) || 0) + Number(item.quantity || 0))
+      })
+    })
+
+    return Array.from(map.values())
+      .map((customer) => {
+        const topProduct = Array.from(customer.productCounts.entries()).sort((a, b) => b[1] - a[1])[0]
+        return {
+          ...customer,
+          topProduct: topProduct ? `${topProduct[0]} (${topProduct[1]} uds)` : 'Sin productos',
+          debts: [...customer.debts].sort((a, b) => b.id - a.id),
+        }
+      })
+      .sort((a, b) => b.totalPending - a.totalPending)
+  }, [debts])
+
 
   const resetStockForm = () =>
     setStockForm({ name: '', type: 'Hybrida', size: '1 g', purchasePrice: '', salePrice: '', stock: '', image: '', imageName: '' })
@@ -1614,6 +2058,7 @@ function App() {
                   <span className="material-symbols-outlined">storefront</span>
                   <span className="section-title">Productos</span>
                 </div>
+                <CostVisibilityToggle showCosts={showCosts} onChange={setShowCosts} />
               </div>
 
               <SmartSearch
@@ -1632,7 +2077,7 @@ function App() {
                 )}
                 {salesPagination.items.map((product) => (
                   <li key={product.id} className="product-item product-unified-card">
-                    <div className="inv-card-img-wrap">
+                    <div className="inv-card-img-wrap" onClick={() => setViewImage({ src: product.image, name: productTitle(product) })}>
                       <img className="inv-card-img" src={product.image} alt={product.name} loading="lazy" decoding="async" />
                       <span className={`stock-dot stock-${stockLevel(product.stock)}`} />
                     </div>
@@ -1647,8 +2092,13 @@ function App() {
 
                       <div className="inv-card-prices">
                         <span className="inv-price-sale">RD${product.salePrice.toFixed(2)}</span>
-                        <span className="inv-price-sep">·</span>
-                        <span className="inv-price-buy">Compra RD${product.purchasePrice.toFixed(2)}</span>
+                        {showCosts && (
+                          <>
+                            <span className="inv-price-sep">·</span>
+                            <span className="inv-price-buy">Compra RD${product.purchasePrice.toFixed(2)}</span>
+                          </>
+                        )}
+                        {!showCosts && <span className="inv-price-buy-hidden">***</span>}
                       </div>
 
                       <div className="inv-card-footer">
@@ -1708,7 +2158,7 @@ function App() {
                   {cart.map((item) => (
                     <li key={item.id} className="cart-item">
                       <div className="cart-preview">
-                        <img className="cart-thumb" src={item.image} alt={item.name} loading="lazy" decoding="async" />
+                        <img className="cart-thumb cart-thumb-clickable" src={item.image} alt={item.name} loading="lazy" decoding="async" onClick={() => setViewImage({ src: item.image, name: productTitle(item) })} />
                         <div className="cart-info">
                           <span className="cart-name">{productTitle(item)}</span>
                           <span className="cart-qty-price">{item.quantity} × RD${item.salePrice.toFixed(2)}</span>
@@ -1761,15 +2211,17 @@ function App() {
                 <div className="debt-sale-panel">
                   <label className="form-group">
                     <span>Cliente</span>
-                    <div className="input-with-icon">
-                      <span className="material-symbols-outlined">person</span>
-                      <input
-                        className="form-input"
-                        value={debtSaleForm.customerName}
-                        onChange={(event) => setDebtSaleForm((current) => ({ ...current, customerName: event.target.value }))}
-                        placeholder="Nombre del cliente"
-                      />
-                    </div>
+                    <button 
+                      type="button" 
+                      className="input-with-icon" 
+                      style={{ width: '100%', textAlign: 'left', background: '#fff', border: '1px solid var(--border)', cursor: 'pointer', minHeight: 46, padding: '0 14px' }}
+                      onClick={() => setCustomerPickerOpen(true)}
+                    >
+                      <span className="material-symbols-outlined" style={{ color: 'var(--text-3)' }}>person</span>
+                      <span className="form-input" style={{ display: 'flex', alignItems: 'center', background: 'transparent', border: 'none', padding: 0 }}>
+                        {debtSaleForm.customerName || <span style={{color: '#9ca3af'}}>Seleccionar cliente</span>}
+                      </span>
+                    </button>
                   </label>
                   <label className="form-group">
                     <span>Abono inicial</span>
@@ -1837,6 +2289,7 @@ function App() {
                     <GramFilter value={inventoryGramFilter} options={sizeOptions} onChange={setInventoryGramFilter} />
                     <GramFilter value={inventoryTypeFilter} options={typeOptions} onChange={setInventoryTypeFilter} />
                   </SmartSearch>
+                  <CostVisibilityToggle showCosts={showCosts} onChange={setShowCosts} />
                   <button className="primary-btn add-product-btn" onClick={() => openInventoryForm()}>
                     <span className="material-symbols-outlined">add_box</span>
                     Nuevo
@@ -1852,9 +2305,9 @@ function App() {
                     const pct = profitPct(product.purchasePrice, product.salePrice)
                     const level = stockLevel(product.stock)
                     return (
-                      <li key={product.id} className="inv-card">
+                      <li key={product.id} className="inv-card product-unified-card">
                         {/* Image */}
-                        <div className="inv-card-img-wrap">
+                        <div className="inv-card-img-wrap" onClick={() => setViewImage({ src: product.image, name: productTitle(product) })}>
                           <img className="inv-card-img" src={product.image} alt={product.name} loading="lazy" decoding="async" />
                           <span className={`stock-dot stock-${level}`} />
                         </div>
@@ -1870,8 +2323,13 @@ function App() {
                           {/* Price row */}
                           <div className="inv-card-prices">
                             <span className="inv-price-sale">RD${product.salePrice.toFixed(2)}</span>
-                            <span className="inv-price-sep">·</span>
-                            <span className="inv-price-buy">Compra RD${product.purchasePrice.toFixed(2)}</span>
+                            {showCosts && (
+                              <>
+                                <span className="inv-price-sep">·</span>
+                                <span className="inv-price-buy">Compra RD${product.purchasePrice.toFixed(2)}</span>
+                              </>
+                            )}
+                            {!showCosts && <span className="inv-price-buy-hidden">***</span>}
                           </div>
 
                           {/* Bottom row */}
@@ -2089,6 +2547,7 @@ function App() {
         {activeTab === 'deudas' && (
           <DebtsModule
             debts={debts}
+            customers={globalCustomers}
             addDebtPayment={addDebtPayment}
             paymentSavingId={String(savingAction || '').startsWith('debt-payment-') ? Number(String(savingAction).replace('debt-payment-', '')) : null}
           />
@@ -2144,58 +2603,58 @@ function App() {
       </nav>
 
       {/* -- MODAL CONFIRMAR ELIMINAR ------------------------ */}
-      {confirmRemove.open && (
-        <div className="modal-backdrop" onClick={closeRemoveModal}>
-          <div className="confirm-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-icon-wrap">
-              <span className="material-symbols-outlined modal-icon">warning</span>
-            </div>
-            <h3>¿Eliminar producto?</h3>
-            <p>Esta acción quitará el producto del inventario permanentemente. ¿Estás seguro?</p>
-            <div className="confirm-actions">
-              <button className="ghost-btn" onClick={closeRemoveModal} disabled={savingAction === 'delete-product'}>
-                No
-              </button>
-              <button className="danger-btn" onClick={removeProduct} disabled={savingAction === 'delete-product'}>
-                <span className="material-symbols-outlined" style={{ fontSize: '0.95rem' }}>delete</span>
-                {savingAction === 'delete-product' ? 'Borrando...' : 'Sí'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {priceEdit.open && (
-        <div className="modal-backdrop" onClick={closePriceEdit}>
-          <form className="confirm-modal price-edit-modal" onSubmit={saveCartPrice} onClick={(e) => e.stopPropagation()}>
-            <div className="modal-icon-wrap price-icon-wrap">
-              <span className="material-symbols-outlined modal-icon">edit_square</span>
-            </div>
-            <h3>Editar precio</h3>
-            <label className="price-edit-field">
-              <span>Precio</span>
-              <input
-                type="number"
-                min="0.01"
-                step="0.01"
-                inputMode="decimal"
-                value={priceEdit.value}
-                onChange={(e) => setPriceEdit((current) => ({ ...current, value: e.target.value }))}
-                autoFocus
-                required
-              />
-            </label>
-            <div className="confirm-actions">
-              <button className="ghost-btn" type="button" onClick={closePriceEdit}>
-                Cancelar
-              </button>
-              <button className="primary-btn" type="submit">
-                <span className="material-symbols-outlined">check</span>
-                Aplicar
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
+      <ConfirmDialog
+        open={confirmRemove.open}
+        icon="warning"
+        title="¿Eliminar producto?"
+        body="Esta acción quitará el producto del inventario permanentemente. ¿Estás seguro?"
+        onCancel={closeRemoveModal}
+        onConfirm={removeProduct}
+        confirmLabel="Sí, eliminar"
+        isLoading={savingAction === 'delete-product'}
+      />
+
+      <ConfirmDialog
+        open={priceEdit.open}
+        icon="edit_square"
+        iconBg="#f0f7f2"
+        iconColor="var(--accent)"
+        title="Editar precio"
+        onCancel={closePriceEdit}
+        onConfirm={saveCartPrice}
+        confirmLabel="Aplicar"
+        confirmClass="primary-btn"
+      >
+        <label className="price-edit-field">
+          <span>Precio</span>
+          <input
+            type="number"
+            min="0.01"
+            step="0.01"
+            inputMode="decimal"
+            value={priceEdit.value}
+            onChange={(e) => setPriceEdit((current) => ({ ...current, value: e.target.value }))}
+            autoFocus
+            required
+            onKeyDown={(e) => e.key === 'Enter' && saveCartPrice()}
+          />
+        </label>
+      </ConfirmDialog>
+
+      <CustomerPicker
+        open={customerPickerOpen}
+        customers={globalCustomers}
+        selectedName={debtSaleForm.customerName}
+        onSelect={(name) => setDebtSaleForm((current) => ({ ...current, customerName: name }))}
+        onClose={() => setCustomerPickerOpen(false)}
+      />
+
+      <ProductImageModal 
+        src={viewImage?.src}
+        name={viewImage?.name}
+        onClose={() => setViewImage(null)}
+      />
+      
       <ToastHost toasts={toasts} onDismiss={dismissToast} />
     </div>
   )
