@@ -2280,8 +2280,16 @@ function App() {
                   </div>
                 </div>
 
+                <div className="section-head" style={{ marginBottom: 14 }}>
+                  <button className="primary-btn" onClick={() => openInventoryForm()} style={{ padding: '8px 16px', minHeight: '36px' }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>add_box</span>
+                    Nuevo
+                  </button>
+                  <CostVisibilityToggle showCosts={showCosts} onChange={setShowCosts} />
+                </div>
+
                 {/* Filter bar */}
-                <div className="inv-filter-bar">
+                <div className="inv-filter-bar" style={{ marginBottom: 14 }}>
                   <SmartSearch
                     value={inventorySearch}
                     onChange={setInventorySearch}
@@ -2291,11 +2299,6 @@ function App() {
                     <GramFilter value={inventoryGramFilter} options={sizeOptions} onChange={setInventoryGramFilter} />
                     <GramFilter value={inventoryTypeFilter} options={typeOptions} onChange={setInventoryTypeFilter} />
                   </SmartSearch>
-                  <CostVisibilityToggle showCosts={showCosts} onChange={setShowCosts} />
-                  <button className="primary-btn add-product-btn" onClick={() => openInventoryForm()}>
-                    <span className="material-symbols-outlined">add_box</span>
-                    Nuevo
-                  </button>
                 </div>
 
                 {/* Inventory cards */}

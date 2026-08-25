@@ -1759,31 +1759,28 @@ button .material-symbols-outlined {
 ══════════════════════════════════════════════════════════ */
 .bottom-nav {
   position: fixed;
-  bottom: 10px;
-  left: 12px;
-  right: 12px;
-  background: #ffffff;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-lg);
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--border);
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
-  padding: 6px;
-  padding-bottom: calc(6px + env(safe-area-inset-bottom));
-  z-index: 50;
-  max-width: 520px;
-  margin: 0 auto;
-  box-shadow: 0 10px 30px rgba(8, 47, 26, 0.16);
+  padding: 6px 12px;
+  padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+  z-index: 999;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.04);
 }
 
 .bottom-nav-btn {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  min-height: 52px;
-  padding: 10px 12px;
+  gap: 4px;
+  min-height: 54px;
+  padding: 6px 4px;
   border-radius: var(--radius-sm);
   color: var(--text-3);
   position: relative;
@@ -1798,12 +1795,23 @@ button .material-symbols-outlined {
 
 .bottom-nav-btn.active {
   color: var(--accent);
-  background: var(--accent-soft);
-  box-shadow: inset 0 0 0 1px rgba(31, 143, 69, 0.12);
+  background: transparent;
+}
+
+.bottom-nav-btn.active::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 3px;
+  border-radius: 0 0 4px 4px;
+  background: var(--accent);
 }
 
 .bottom-nav-icon {
-  font-size: 1.35rem;
+  font-size: 1.45rem;
   flex-shrink: 0;
 }
 
@@ -1812,8 +1820,8 @@ button .material-symbols-outlined {
 }
 
 .bottom-nav-label {
-  font-size: 0.84rem;
-  font-weight: 800;
+  font-size: 0.75rem;
+  font-weight: 700;
   white-space: nowrap;
 }
 
@@ -2089,8 +2097,6 @@ button .material-symbols-outlined {
   .brand-logo         { width: 40px; height: 40px; }
   .brand-name         { font-size: 1.28rem; }
   .pushable .front    { padding: 9px 12px; font-size: 0.76rem; }
-  .bottom-nav         { left: 10px; right: 10px; bottom: 8px; }
-  .bottom-nav-btn     { min-height: 50px; padding-inline: 8px; }
 }
 
 /* Scrollbar */
@@ -3064,24 +3070,7 @@ button .material-symbols-outlined {
   transform: translateY(-1px);
 }
 
-.bottom-nav {
-  border: 1px solid rgba(122, 184, 139, 0.7);
-  background: #ffffff;
-}
 
-.bottom-nav-btn {
-  border-radius: 14px;
-}
-
-.bottom-nav-btn.active {
-  background: #e8f7ed;
-  color: #0b5a2f;
-  box-shadow: inset 0 0 0 1px #c7ead0;
-}
-
-.bottom-nav-btn.active .bottom-nav-icon {
-  color: #0b5a2f;
-}
 
 .cash-hero,
 .estimate-hero,
