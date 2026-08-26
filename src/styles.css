@@ -72,7 +72,7 @@ html, body, #root {
 }
 
 html {
-  overflow-x: hidden;
+  overflow-x: clip;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
@@ -85,7 +85,7 @@ body {
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 button, input, select, textarea {
@@ -247,9 +247,11 @@ button .material-symbols-outlined {
   padding: 12px 14px;
   background: #ffffff;
   border-bottom: 2px solid var(--border);
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 20;
+  left: 0;
+  width: 100%;
+  z-index: 50;
   box-shadow: 0 2px 12px rgba(8, 47, 26, 0.08);
 }
 
@@ -336,7 +338,7 @@ button .material-symbols-outlined {
 .page-content {
   position: relative;
   z-index: 1;
-  padding: 16px 14px 104px;
+  padding: 86px 14px 104px;
   display: grid;
   gap: 18px;
   max-width: 540px;
