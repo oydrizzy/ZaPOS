@@ -3624,7 +3624,9 @@ button .material-symbols-outlined {
   color: var(--text);
   font-size: 1.02rem;
   line-height: 1.1;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .debt-client-summary {
@@ -4211,8 +4213,6 @@ button .material-symbols-outlined {
   min-width: 0;
 }
 
-.inv-card-name,
-.cart-name,
 .estimate-product strong,
 .cash-log-item strong,
 .debt-products {
@@ -5395,3 +5395,178 @@ button .material-symbols-outlined {
   margin-bottom: 7px;
 }
 
+/* --- Nuevos Estilos de Filtros y Correcciones --- */
+
+/* Evitar zoom automático en iOS para inputs */
+@media (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Text Overflow Utilities */
+.text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.text-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Filter Sheet */
+.filter-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  opacity: 0;
+  animation: fadeInOverlay 0.25s forwards;
+}
+
+.filter-sheet-content {
+  background: #ffffff;
+  width: 100%;
+  max-height: 85vh;
+  border-radius: 20px 20px 0 0;
+  padding: 20px;
+  overflow-y: auto;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+  transform: translateY(100%);
+  animation: slideUpSheet 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom));
+}
+
+@media (min-width: 768px) {
+  .filter-sheet-overlay {
+    align-items: center;
+  }
+  .filter-sheet-content {
+    width: 400px;
+    border-radius: 20px;
+    transform: scale(0.95);
+    animation: scaleUpModal 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    padding-bottom: 20px;
+  }
+}
+
+@keyframes fadeInOverlay { to { opacity: 1; } }
+@keyframes slideUpSheet { to { transform: translateY(0); } }
+@keyframes scaleUpModal { to { transform: scale(1); } }
+
+.filter-sheet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.filter-sheet-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text);
+}
+.filter-sheet-close {
+  background: var(--surface-2);
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-2);
+  cursor: pointer;
+}
+.filter-sheet-section {
+  margin-bottom: 20px;
+}
+.filter-sheet-section h4 {
+  margin: 0 0 10px 0;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--text-3);
+  text-transform: uppercase;
+}
+
+.filter-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.filter-chip {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: 0.85rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.filter-chip.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.filter-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 30px;
+}
+.filter-actions button {
+  flex: 1;
+}
+
+.active-filters-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.active-filter-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+.active-filter-badge .material-symbols-outlined {
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-2);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.filter-btn:hover {
+  background: var(--border);
+}
+.filter-btn.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}

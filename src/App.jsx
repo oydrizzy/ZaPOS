@@ -19,6 +19,54 @@ const productTypes = ['Sativa', 'Indica', 'Hybrida']
 const initialProducts = []
 
 /* -- Helpers ----------------------------------------------- */
+function useDebounce(value, delay) {
+  const [debouncedValue, setDebouncedValue] = useState(value)
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedValue(value), delay)
+    return () => clearTimeout(handler)
+  }, [value, delay])
+  return debouncedValue
+}
+
+function isDateInRange(dateStr, range, customFrom, customTo) {
+  if (range === 'all') return true;
+  const d = new Date(dateStr);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  if (range === 'today') return d >= today;
+  if (range === 'yesterday') {
+    const yest = new Date(today);
+    yest.setDate(yest.getDate() - 1);
+    return d >= yest && d < today;
+  }
+  if (range === '7days') {
+    const p = new Date(today);
+    p.setDate(p.getDate() - 7);
+    return d >= p;
+  }
+  if (range === '30days') {
+    const p = new Date(today);
+    p.setDate(p.getDate() - 30);
+    return d >= p;
+  }
+  if (range === 'thisMonth') {
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  }
+  if (range === 'lastMonth') {
+    const lm = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    return d.getFullYear() === lm.getFullYear() && d.getMonth() === lm.getMonth();
+  }
+  if (range === 'custom') {
+    const from = customFrom ? new Date(customFrom + 'T00:00:00') : null;
+    const to = customTo ? new Date(customTo + 'T23:59:59') : null;
+    if (from && to) return d >= from && d <= to;
+    if (from) return d >= from;
+    if (to) return d <= to;
+  }
+  return true;
+}
+
 function profitPct(purchase, sale) {
   if (!purchase || !sale) return 0
   return Math.round(((sale - purchase) / purchase) * 100)
@@ -149,6 +197,47 @@ function EmptyState({ icon = 'inbox', title, subtitle }) {
       </div>
       {title && <p className="empty-state-title">{title}</p>}
       {subtitle && <p className="empty-state-subtitle">{subtitle}</p>}
+    </div>
+  )
+}
+
+/* -- UI Filtros -- */
+function FilterSheet({ isOpen, onClose, onApply, onClear, title = 'Filtros', children }) {
+  if (!isOpen) return null;
+  return (
+    <div className="filter-sheet-overlay" onClick={onClose}>
+      <div className="filter-sheet-content" onClick={(e) => e.stopPropagation()}>
+        <div className="filter-sheet-header">
+          <h3>{title}</h3>
+          <button className="filter-sheet-close" onClick={onClose}>
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <div className="filter-sheet-body">
+          {children}
+        </div>
+        <div className="filter-actions">
+          <button className="secondary-btn" onClick={onClear}>Limpiar</button>
+          <button className="primary-btn" onClick={onApply}>Aplicar</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ActiveFilterChips({ filters, onRemove, onClearAll }) {
+  if (!filters || filters.length === 0) return null;
+  return (
+    <div className="active-filters-container">
+      {filters.map((f, i) => (
+        <div key={i} className="active-filter-badge">
+          {f.label}
+          <span className="material-symbols-outlined" onClick={() => onRemove(f.key)}>close</span>
+        </div>
+      ))}
+      <button className="text-btn" onClick={onClearAll} style={{ fontSize: '0.75rem', marginLeft: 'auto' }}>
+        Limpiar todos
+      </button>
     </div>
   )
 }
@@ -671,10 +760,21 @@ function Pagination({ page, totalPages, start, end, total, onPageChange }) {
 }
 
 function CashModule({ transactions, summary, movementForm, setMovementForm, addCashMovement, onRevertTransaction, isSaving }) {
-  const [cashSearch, setCashSearch] = useState('')
+  const [cashSearch, setCashSearch] = useState(() => sessionStorage.getItem('cashSearch') || '')
   const [cashPage, setCashPage] = useState(1)
   const [revertTarget, setRevertTarget] = useState(null)
   const [isReverting, setIsReverting] = useState(false)
+  const [cashFilters, setCashFilters] = useState(() => JSON.parse(sessionStorage.getItem('cashFilters')) || { sort: 'recent', date: 'all', type: 'all', dateFrom: '', dateTo: '' })
+  const [tempFilters, setTempFilters] = useState(cashFilters)
+  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false)
+  const debouncedCashSearch = useDebounce(cashSearch, 300)
+
+  useEffect(() => {
+    sessionStorage.setItem('cashSearch', cashSearch)
+  }, [cashSearch])
+  useEffect(() => {
+    sessionStorage.setItem('cashFilters', JSON.stringify(cashFilters))
+  }, [cashFilters])
 
   const getEntryLabel = (entry) =>
     entry.type === 'sale'
@@ -688,9 +788,16 @@ function CashModule({ transactions, summary, movementForm, setMovementForm, addC
             : 'Egreso'
 
   const recentTransactions = useMemo(() => {
-    const query = normalizeText(cashSearch)
+    const query = normalizeText(debouncedCashSearch)
     return [...transactions]
       .filter((entry) => {
+        // Date filter
+        if (!isDateInRange(entry.date, cashFilters.date, cashFilters.dateFrom, cashFilters.dateTo)) return false
+        
+        // Type filter
+        if (cashFilters.type !== 'all' && entry.type !== cashFilters.type) return false
+
+        // Search filter
         if (!query) return true
         const itemsText = entry.items?.map((item) => `${item.quantity} ${productTitle(item)}`).join(' ') || ''
         return normalizeText([
@@ -702,13 +809,19 @@ function CashModule({ transactions, summary, movementForm, setMovementForm, addC
           itemsText,
         ].join(' ')).includes(query)
       })
-      .sort((a, b) => b.id - a.id)
-  }, [transactions, cashSearch])
+      .sort((a, b) => {
+        if (cashFilters.sort === 'recent') return b.id - a.id
+        if (cashFilters.sort === 'oldest') return a.id - b.id
+        if (cashFilters.sort === 'highest') return b.amount - a.amount
+        if (cashFilters.sort === 'lowest') return a.amount - b.amount
+        return b.id - a.id
+      })
+  }, [transactions, debouncedCashSearch, cashFilters])
   const cashPagination = paginate(recentTransactions, cashPage, 6)
 
   useEffect(() => {
     setCashPage(1)
-  }, [cashSearch, transactions.length])
+  }, [debouncedCashSearch, cashFilters, transactions.length])
 
   const closeRevertModal = () => {
     if (!isReverting) setRevertTarget(null)
@@ -720,6 +833,16 @@ function CashModule({ transactions, summary, movementForm, setMovementForm, addC
     const reverted = await onRevertTransaction(revertTarget)
     setIsReverting(false)
     if (reverted) setRevertTarget(null)
+  }
+
+  const activeFiltersList = []
+  if (cashFilters.date !== 'all') {
+    const dateLabels = { today: 'Hoy', yesterday: 'Ayer', '7days': '7 días', '30days': '30 días', thisMonth: 'Este mes', lastMonth: 'Mes ant.', custom: 'Fecha per.' }
+    activeFiltersList.push({ key: 'date', label: dateLabels[cashFilters.date] || cashFilters.date })
+  }
+  if (cashFilters.type !== 'all') {
+    const typeLabels = { income: 'Ingresos', expense: 'Egresos', sale: 'Ventas', debt_sale: 'Fiadas', debt_payment: 'Abonos' }
+    activeFiltersList.push({ key: 'type', label: typeLabels[cashFilters.type] || cashFilters.type })
   }
 
   return (
@@ -812,15 +935,30 @@ function CashModule({ transactions, summary, movementForm, setMovementForm, addC
         <SmartSearch
           value={cashSearch}
           onChange={setCashSearch}
-          placeholder="Buscar venta, ingreso, egreso o producto"
-          count={`${recentTransactions.length} movimientos`}
+          placeholder="Buscar..."
+          count={`${recentTransactions.length} mov`}
+        >
+          <button 
+            type="button" 
+            className={`filter-btn ${activeFiltersList.length > 0 ? 'active' : ''}`}
+            onClick={() => { setTempFilters(cashFilters); setIsFilterSheetOpen(true); }}
+          >
+            <span className="material-symbols-outlined">tune</span>
+            Filtros {activeFiltersList.length > 0 && `(${activeFiltersList.length})`}
+          </button>
+        </SmartSearch>
+
+        <ActiveFilterChips 
+          filters={activeFiltersList} 
+          onRemove={(key) => setCashFilters(prev => ({ ...prev, [key]: 'all' }))}
+          onClearAll={() => setCashFilters({ sort: 'recent', date: 'all', type: 'all', dateFrom: '', dateTo: '' })}
         />
 
         {recentTransactions.length === 0 ? (
           <EmptyState
             icon={transactions.length === 0 ? 'receipt_long' : 'search_off'}
-            title={transactions.length === 0 ? 'Sin movimientos aún' : 'Sin resultados'}
-            subtitle={transactions.length === 0 ? 'Registra tu primer movimiento o venta.' : 'Intenta con otro término de búsqueda.'}
+            title={transactions.length === 0 ? 'Sin movimientos' : 'No encontramos movimientos'}
+            subtitle={transactions.length === 0 ? 'Registra tu primer movimiento.' : 'Prueba cambiando los filtros o la búsqueda.'}
           />
         ) : (
           <ul className="cash-log-list">
@@ -877,6 +1015,58 @@ function CashModule({ transactions, summary, movementForm, setMovementForm, addC
           </div>
         )}
       </ConfirmDialog>
+
+      <FilterSheet 
+        isOpen={isFilterSheetOpen}
+        onClose={() => setIsFilterSheetOpen(false)}
+        title="Filtros de Caja"
+        onClear={() => {
+          setTempFilters({ sort: 'recent', date: 'all', type: 'all', dateFrom: '', dateTo: '' })
+        }}
+        onApply={() => {
+          setCashFilters(tempFilters)
+          setIsFilterSheetOpen(false)
+        }}
+      >
+        <div className="filter-sheet-section">
+          <h4>Orden</h4>
+          <div className="filter-chips-row">
+            {[{v: 'recent', l: 'Más recientes'}, {v: 'oldest', l: 'Más antiguos'}, {v: 'highest', l: 'Mayor monto'}, {v: 'lowest', l: 'Menor monto'}].map(o => (
+              <button key={o.v} className={`filter-chip ${tempFilters.sort === o.v ? 'active' : ''}`} onClick={() => setTempFilters({...tempFilters, sort: o.v})}>{o.l}</button>
+            ))}
+          </div>
+        </div>
+
+        <div className="filter-sheet-section">
+          <h4>Fecha</h4>
+          <div className="filter-chips-row">
+            {[{v: 'all', l: 'Todo'}, {v: 'today', l: 'Hoy'}, {v: 'yesterday', l: 'Ayer'}, {v: '7days', l: 'Últimos 7 días'}, {v: '30days', l: 'Últimos 30 días'}, {v: 'thisMonth', l: 'Este mes'}, {v: 'lastMonth', l: 'Mes anterior'}, {v: 'custom', l: 'Rango personalizado'}].map(o => (
+              <button key={o.v} className={`filter-chip ${tempFilters.date === o.v ? 'active' : ''}`} onClick={() => setTempFilters({...tempFilters, date: o.v})}>{o.l}</button>
+            ))}
+          </div>
+          {tempFilters.date === 'custom' && (
+            <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+              <label className="form-group" style={{ flex: 1 }}>
+                <span>Desde</span>
+                <input type="date" className="form-input" value={tempFilters.dateFrom} onChange={e => setTempFilters({...tempFilters, dateFrom: e.target.value})} style={{ padding: '8px' }} />
+              </label>
+              <label className="form-group" style={{ flex: 1 }}>
+                <span>Hasta</span>
+                <input type="date" className="form-input" value={tempFilters.dateTo} onChange={e => setTempFilters({...tempFilters, dateTo: e.target.value})} style={{ padding: '8px' }} />
+              </label>
+            </div>
+          )}
+        </div>
+
+        <div className="filter-sheet-section">
+          <h4>Tipo de Movimiento</h4>
+          <div className="filter-chips-row">
+            {[{v: 'all', l: 'Todos'}, {v: 'income', l: 'Ingresos'}, {v: 'expense', l: 'Egresos'}, {v: 'sale', l: 'Ventas'}, {v: 'debt_sale', l: 'Ventas fiadas'}, {v: 'debt_payment', l: 'Abonos'}].map(o => (
+              <button key={o.v} className={`filter-chip ${tempFilters.type === o.v ? 'active' : ''}`} onClick={() => setTempFilters({...tempFilters, type: o.v})}>{o.l}</button>
+            ))}
+          </div>
+        </div>
+      </FilterSheet>
     </div>
   )
 }
@@ -1104,12 +1294,23 @@ function EstimatesModule({ products, cashSummary }) {
 }
 
 function DebtsModule({ debts, customers, addDebtPayment, paymentSavingId }) {
-  const [debtSearch, setDebtSearch] = useState('')
+  const [debtSearch, setDebtSearch] = useState(() => sessionStorage.getItem('debtSearch') || '')
   const [debtPage, setDebtPage] = useState(1)
   const [expandedCustomers, setExpandedCustomers] = useState([])
   const [expandedHistories, setExpandedHistories] = useState([])
   const [paymentModal, setPaymentModal] = useState({ open: false, debt: null })
   const [isSavingPayment, setIsSavingPayment] = useState(false)
+  const [debtFilters, setDebtFilters] = useState(() => JSON.parse(sessionStorage.getItem('debtFilters')) || { sort: 'recent', date: 'all', status: 'all', dateFrom: '', dateTo: '' })
+  const [tempDebtFilters, setTempDebtFilters] = useState(debtFilters)
+  const [isDebtFilterSheetOpen, setIsDebtFilterSheetOpen] = useState(false)
+  const debouncedDebtSearch = useDebounce(debtSearch, 300)
+
+  useEffect(() => {
+    sessionStorage.setItem('debtSearch', debtSearch)
+  }, [debtSearch])
+  useEffect(() => {
+    sessionStorage.setItem('debtFilters', JSON.stringify(debtFilters))
+  }, [debtFilters])
 
   const debtTotals = debts.reduce(
     (acc, debt) => ({
@@ -1121,19 +1322,50 @@ function DebtsModule({ debts, customers, addDebtPayment, paymentSavingId }) {
     { total: 0, paid: 0, pending: 0, open: 0 }
   )
 
-  const filteredCustomers = customers.filter((customer) => {
-    const needle = normalizeText(debtSearch)
-    if (!needle) return true
-    const debtsText = customer.debts
-      .map((debt) => `${debt.status} ${debt.totalAmount} ${debt.paidAmount} ${debt.remainingAmount} ${(debt.items || []).map(productTitle).join(' ')}`)
-      .join(' ')
-    return normalizeText(`${customer.name} ${customer.topProduct} ${debtsText}`).includes(needle)
-  })
+  const filteredCustomers = useMemo(() => {
+    const needle = normalizeText(debouncedDebtSearch)
+    return customers.map(c => {
+      const filteredDebts = c.debts.filter(debt => {
+        if (debtFilters.status !== 'all' && debt.status !== debtFilters.status) return false
+        if (!isDateInRange(debt.date, debtFilters.date, debtFilters.dateFrom, debtFilters.dateTo)) return false
+        return true
+      }).sort((a, b) => {
+        if (debtFilters.sort === 'recent') return new Date(b.date) - new Date(a.date)
+        if (debtFilters.sort === 'oldest') return new Date(a.date) - new Date(b.date)
+        if (debtFilters.sort === 'highest') return b.remainingAmount - a.remainingAmount
+        if (debtFilters.sort === 'lowest') return a.remainingAmount - b.remainingAmount
+        return new Date(b.date) - new Date(a.date)
+      });
+      return { ...c, debts: filteredDebts }
+    }).filter(customer => {
+      if (customer.debts.length === 0) return false
+      
+      if (!needle) return true
+      const debtsText = customer.debts
+        .map((debt) => `${debt.status} ${debt.totalAmount} ${debt.paidAmount} ${debt.remainingAmount} ${(debt.items || []).map(productTitle).join(' ')}`)
+        .join(' ')
+      return normalizeText(`${customer.name} ${customer.topProduct} ${debtsText}`).includes(needle)
+    }).sort((a, b) => {
+      const maxDebtA = Math.max(...a.debts.map(d => d.remainingAmount)) || 0
+      const maxDebtB = Math.max(...b.debts.map(d => d.remainingAmount)) || 0
+      const totalPurchasedA = a.debts.reduce((sum, d) => sum + Number(d.totalAmount), 0)
+      const totalPurchasedB = b.debts.reduce((sum, d) => sum + Number(d.totalAmount), 0)
+      
+      if (debtFilters.sort === 'recent') return new Date(b.debts[0]?.date) - new Date(a.debts[0]?.date)
+      if (debtFilters.sort === 'oldest') return new Date(a.debts[0]?.date) - new Date(b.debts[0]?.date)
+      if (debtFilters.sort === 'highest') return maxDebtB - maxDebtA
+      if (debtFilters.sort === 'lowest') return maxDebtA - maxDebtB
+      if (debtFilters.sort === 'highest_total') return totalPurchasedB - totalPurchasedA
+      if (debtFilters.sort === 'lowest_total') return totalPurchasedA - totalPurchasedB
+      return 0
+    })
+  }, [customers, debouncedDebtSearch, debtFilters])
+  
   const debtPagination = paginate(filteredCustomers, debtPage, 4)
 
   useEffect(() => {
     setDebtPage(1)
-  }, [debtSearch, debts.length])
+  }, [debouncedDebtSearch, debtFilters, customers.length])
 
   const toggleCustomer = (customerName) => {
     setExpandedCustomers((current) =>
@@ -1164,6 +1396,17 @@ function DebtsModule({ debts, customers, addDebtPayment, paymentSavingId }) {
     const ok = await addDebtPayment(debt, draft)
     setIsSavingPayment(false)
     if (ok) setPaymentModal({ open: false, debt: null })
+    if (ok) setPaymentModal({ open: false, debt: null })
+  }
+
+  const activeDebtFiltersList = []
+  if (debtFilters.date !== 'all') {
+    const dateLabels = { today: 'Hoy', '7days': '7 días', '30days': '30 días', thisMonth: 'Este mes', lastMonth: 'Mes ant.', custom: 'Fecha per.' }
+    activeDebtFiltersList.push({ key: 'date', label: dateLabels[debtFilters.date] || debtFilters.date })
+  }
+  if (debtFilters.status !== 'all') {
+    const statusLabels = { pending: 'Pendientes', partial: 'Parciales', paid: 'Pagadas' }
+    activeDebtFiltersList.push({ key: 'status', label: statusLabels[debtFilters.status] || debtFilters.status })
   }
 
   return (
@@ -1211,14 +1454,29 @@ function DebtsModule({ debts, customers, addDebtPayment, paymentSavingId }) {
           onChange={setDebtSearch}
           placeholder="Buscar cliente, producto o monto"
           count={`${filteredCustomers.length} clientes`}
+        >
+          <button 
+            type="button" 
+            className={`filter-btn ${activeDebtFiltersList.length > 0 ? 'active' : ''}`}
+            onClick={() => { setTempDebtFilters(debtFilters); setIsDebtFilterSheetOpen(true); }}
+          >
+            <span className="material-symbols-outlined">tune</span>
+            Filtros {activeDebtFiltersList.length > 0 && `(${activeDebtFiltersList.length})`}
+          </button>
+        </SmartSearch>
+
+        <ActiveFilterChips 
+          filters={activeDebtFiltersList} 
+          onRemove={(key) => setDebtFilters(prev => ({ ...prev, [key]: 'all' }))}
+          onClearAll={() => setDebtFilters({ sort: 'recent', date: 'all', status: 'all', dateFrom: '', dateTo: '' })}
         />
 
         <div className="debt-client-list">
           {filteredCustomers.length === 0 && (
             <EmptyState
               icon={debts.length === 0 ? 'handshake' : 'search_off'}
-              title={debts.length === 0 ? 'Sin deudas registradas' : 'Sin resultados'}
-              subtitle={debts.length === 0 ? 'Usa el método "Fiar" al vender para registrar una deuda.' : 'Intenta con otro nombre o término.'}
+              title={debts.length === 0 ? 'Sin deudas registradas' : 'No encontramos cuentas'}
+              subtitle={debts.length === 0 ? 'Usa el método "Fiar" al vender para registrar una deuda.' : 'Prueba buscando otro cliente o modificando los filtros.'}
             />
           )}
           {debtPagination.items.map((customer) => {
@@ -1409,6 +1667,58 @@ function DebtsModule({ debts, customers, addDebtPayment, paymentSavingId }) {
         onSubmit={handlePaymentSubmit}
         isSaving={isSavingPayment}
       />
+
+      <FilterSheet 
+        isOpen={isDebtFilterSheetOpen}
+        onClose={() => setIsDebtFilterSheetOpen(false)}
+        title="Filtros de Deudas"
+        onClear={() => {
+          setTempDebtFilters({ sort: 'recent', date: 'all', status: 'all', dateFrom: '', dateTo: '' })
+        }}
+        onApply={() => {
+          setDebtFilters(tempDebtFilters)
+          setIsDebtFilterSheetOpen(false)
+        }}
+      >
+        <div className="filter-sheet-section">
+          <h4>Estado</h4>
+          <div className="filter-chips-row">
+            {[{v: 'all', l: 'Todas'}, {v: 'pending', l: 'Pendientes'}, {v: 'partial', l: 'Parciales'}, {v: 'paid', l: 'Pagadas'}].map(o => (
+              <button key={o.v} className={`filter-chip ${tempDebtFilters.status === o.v ? 'active' : ''}`} onClick={() => setTempDebtFilters({...tempDebtFilters, status: o.v})}>{o.l}</button>
+            ))}
+          </div>
+        </div>
+
+        <div className="filter-sheet-section">
+          <h4>Orden</h4>
+          <div className="filter-chips-row">
+            {[{v: 'recent', l: 'Más recientes'}, {v: 'oldest', l: 'Más antiguas'}, {v: 'highest', l: 'Mayor deuda'}, {v: 'lowest', l: 'Menor deuda'}, {v: 'highest_total', l: 'Mayor compra'}, {v: 'lowest_total', l: 'Menor compra'}].map(o => (
+              <button key={o.v} className={`filter-chip ${tempDebtFilters.sort === o.v ? 'active' : ''}`} onClick={() => setTempDebtFilters({...tempDebtFilters, sort: o.v})}>{o.l}</button>
+            ))}
+          </div>
+        </div>
+
+        <div className="filter-sheet-section">
+          <h4>Fecha</h4>
+          <div className="filter-chips-row">
+            {[{v: 'all', l: 'Todo'}, {v: 'today', l: 'Hoy'}, {v: '7days', l: 'Últimos 7 días'}, {v: '30days', l: 'Últimos 30 días'}, {v: 'thisMonth', l: 'Este mes'}, {v: 'lastMonth', l: 'Mes anterior'}, {v: 'custom', l: 'Rango personalizado'}].map(o => (
+              <button key={o.v} className={`filter-chip ${tempDebtFilters.date === o.v ? 'active' : ''}`} onClick={() => setTempDebtFilters({...tempDebtFilters, date: o.v})}>{o.l}</button>
+            ))}
+          </div>
+          {tempDebtFilters.date === 'custom' && (
+            <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+              <label className="form-group" style={{ flex: 1 }}>
+                <span>Desde</span>
+                <input type="date" className="form-input" value={tempDebtFilters.dateFrom} onChange={e => setTempDebtFilters({...tempDebtFilters, dateFrom: e.target.value})} style={{ padding: '8px' }} />
+              </label>
+              <label className="form-group" style={{ flex: 1 }}>
+                <span>Hasta</span>
+                <input type="date" className="form-input" value={tempDebtFilters.dateTo} onChange={e => setTempDebtFilters({...tempDebtFilters, dateTo: e.target.value})} style={{ padding: '8px' }} />
+              </label>
+            </div>
+          )}
+        </div>
+      </FilterSheet>
     </div>
   )
 }
