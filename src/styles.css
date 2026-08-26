@@ -584,9 +584,10 @@ button .material-symbols-outlined {
 
 .smart-filter-panel {
   width: 100%;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
   gap: 10px;
   margin: 0 0 14px;
   padding: 10px;
@@ -597,6 +598,7 @@ button .material-symbols-outlined {
 }
 
 .smart-search {
+  flex: 1 1 240px;
   min-width: 0;
   min-height: 44px;
   display: flex;
