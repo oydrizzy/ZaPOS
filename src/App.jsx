@@ -626,30 +626,35 @@ function SmartSearch({
   };
 
   return (
-    <div className="smart-filter-panel">
-      <label className="smart-search">
-        <span className="material-symbols-outlined">search</span>
-        <input
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          type="search"
-          aria-label={placeholder}
-        />
-        {value && (
-          <button type="button" onClick={() => onChange('')} aria-label="Limpiar búsqueda">
-            <span className="material-symbols-outlined">close</span>
-          </button>
-        )}
-      </label>
-      <div className="smart-filter-actions">
-        {children}
-        {showReset && (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+      {showReset && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <button type="button" onClick={handleReset} className="reset-filters-btn" title="Restablecer filtros" aria-label="Restablecer filtros">
             <span className="material-symbols-outlined">filter_alt_off</span>
+            Limpiar filtros
           </button>
-        )}
-        <span className="filter-count-badge">{count}</span>
+        </div>
+      )}
+      <div className="smart-filter-panel">
+        <label className="smart-search">
+          <span className="material-symbols-outlined">search</span>
+          <input
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            type="search"
+            aria-label={placeholder}
+          />
+          {value && (
+            <button type="button" onClick={() => onChange('')} aria-label="Limpiar búsqueda">
+              <span className="material-symbols-outlined">close</span>
+            </button>
+          )}
+        </label>
+        <div className="smart-filter-actions">
+          {children}
+          <span className="filter-count-badge">{count}</span>
+        </div>
       </div>
     </div>
   )
