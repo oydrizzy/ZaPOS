@@ -894,13 +894,15 @@ function EstimatesModule({ products, cashSummary }) {
     []
   )
   const typeOptions = useMemo(() => ['Todos', ...productTypes], [])
-  const rows = products.map((product) => {
-    const cost = product.purchasePrice * product.stock
-    const revenue = product.salePrice * product.stock
-    const profit = revenue - cost
-    const unitProfit = product.salePrice - product.purchasePrice
-    return { ...product, cost, revenue, profit, unitProfit }
-  })
+  const rows = products
+    .filter((product) => product.stock > 0)
+    .map((product) => {
+      const cost = product.purchasePrice * product.stock
+      const revenue = product.salePrice * product.stock
+      const profit = revenue - cost
+      const unitProfit = product.salePrice - product.purchasePrice
+      return { ...product, cost, revenue, profit, unitProfit }
+    })
   const filteredRows = rows.filter((row) => {
     const gramOk = estimateGramFilter === 'Todos' || row.size === estimateGramFilter
     const typeOk = estimateTypeFilter === 'Todos' || (row.type || 'Hybrida') === estimateTypeFilter
