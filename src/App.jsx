@@ -503,8 +503,8 @@ function LoginScreen({ form, setForm, onLogin, isSubmitting }) {
   return (
     <div className="plain-auth-screen">
       <main className="plain-auth-card">
-        <img className="plain-auth-logo" src={logo} alt="Z4Z4" />
-        <h1 className="plain-auth-title">Z4Z4</h1>
+        <img className="plain-auth-logo" alt="Logo" />
+        <h1 className="plain-auth-title">Iniciar Sesión</h1>
 
         <form className="plain-auth-form" onSubmit={onLogin}>
           <label className="plain-auth-field">
@@ -512,7 +512,7 @@ function LoginScreen({ form, setForm, onLogin, isSubmitting }) {
               type="email"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
-              placeholder="correo"
+              placeholder="Correo"
               autoComplete="email"
               disabled={isSubmitting}
               required
@@ -524,7 +524,7 @@ function LoginScreen({ form, setForm, onLogin, isSubmitting }) {
               type="password"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
-              placeholder="clave"
+              placeholder="Contraseña"
               autoComplete="current-password"
               disabled={isSubmitting}
               required
