@@ -156,9 +156,9 @@ function EmptyState({ icon = 'inbox', title, subtitle }) {
 /* ── StatusBadge ─────────────────────────────────────────── */
 function StatusBadge({ status }) {
   const map = {
-    pending:  { icon: 'schedule',      label: 'Pendiente', cls: 'status-pending' },
-    partial:  { icon: 'incomplete_circle', label: 'Parcial', cls: 'status-partial' },
-    paid:     { icon: 'check_circle',  label: 'Pagada',    cls: 'status-paid' },
+    pending: { icon: 'schedule', label: 'Pendiente', cls: 'status-pending' },
+    partial: { icon: 'incomplete_circle', label: 'Parcial', cls: 'status-partial' },
+    paid: { icon: 'check_circle', label: 'Pagada', cls: 'status-paid' },
   }
   const info = map[status] || map.pending
   return (
@@ -343,7 +343,7 @@ function CustomerPicker({ open, customers, selectedName, onSelect, onClose }) {
                 className="form-input"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
-                placeholder="Ej. Richardson"
+                placeholder="Ej. Danielito"
                 autoFocus
                 required
               />
@@ -1056,38 +1056,38 @@ function EstimatesModule({ products, cashSummary }) {
           {estimatePagination.items.map((row) => {
             const isExpanded = expandedEstimateIds.includes(row.id)
             return (
-            <li key={row.id} className={`estimate-item ${isExpanded ? 'expanded' : ''}`}>
-              <button
-                className="estimate-item-toggle"
-                type="button"
-                onClick={() => toggleEstimateRow(row.id)}
-                aria-expanded={isExpanded}
-              >
-                <div className="estimate-product">
-                <img src={row.image} alt={row.name} loading="lazy" decoding="async" />
-                <div>
-                  <strong>{productTitle(row)}</strong>
-                  <span>{row.stock} uds · {row.size}</span>
-                </div>
-                </div>
-                <div className="estimate-item-summary">
-                  <span>Ganaria</span>
-                  <strong>{money(row.profit)}</strong>
-                </div>
-                <span className="material-symbols-outlined estimate-chevron">
-                  {isExpanded ? 'expand_less' : 'expand_more'}
-                </span>
-              </button>
-              {isExpanded && (
-              <div className="estimate-values">
-                <span><em>Costo unidad</em><b>{money(row.purchasePrice)}</b></span>
-                <span><em>Unidades</em><b>{row.stock}</b></span>
-                <span><em>Invertido</em><b>{money(row.purchasePrice)} x {row.stock} = {money(row.cost)}</b></span>
-                <span><em>Venderia</em><b>{money(row.salePrice)} x {row.stock} = {money(row.revenue)}</b></span>
-                <strong><em>Ganaria</em><b>{money(row.profit)}</b></strong>
-              </div>
-              )}
-            </li>
+              <li key={row.id} className={`estimate-item ${isExpanded ? 'expanded' : ''}`}>
+                <button
+                  className="estimate-item-toggle"
+                  type="button"
+                  onClick={() => toggleEstimateRow(row.id)}
+                  aria-expanded={isExpanded}
+                >
+                  <div className="estimate-product">
+                    <img src={row.image} alt={row.name} loading="lazy" decoding="async" />
+                    <div>
+                      <strong>{productTitle(row)}</strong>
+                      <span>{row.stock} uds · {row.size}</span>
+                    </div>
+                  </div>
+                  <div className="estimate-item-summary">
+                    <span>Ganaria</span>
+                    <strong>{money(row.profit)}</strong>
+                  </div>
+                  <span className="material-symbols-outlined estimate-chevron">
+                    {isExpanded ? 'expand_less' : 'expand_more'}
+                  </span>
+                </button>
+                {isExpanded && (
+                  <div className="estimate-values">
+                    <span><em>Costo unidad</em><b>{money(row.purchasePrice)}</b></span>
+                    <span><em>Unidades</em><b>{row.stock}</b></span>
+                    <span><em>Invertido</em><b>{money(row.purchasePrice)} x {row.stock} = {money(row.cost)}</b></span>
+                    <span><em>Venderia</em><b>{money(row.salePrice)} x {row.stock} = {money(row.revenue)}</b></span>
+                    <strong><em>Ganaria</em><b>{money(row.profit)}</b></strong>
+                  </div>
+                )}
+              </li>
             )
           })}
         </ul>
@@ -1447,7 +1447,7 @@ function App() {
   const [confirmRemove, setConfirmRemove] = useState({ open: false, productId: null })
   const [priceEdit, setPriceEdit] = useState({ open: false, itemId: null, value: '' })
   const [savingAction, setSavingAction] = useState(null)
-  
+
   // New States for phase 2 and 4
   const [viewImage, setViewImage] = useState(null) // { src: string, name: string }
   const [showCosts, setShowCosts] = useState(() => {
@@ -1567,10 +1567,10 @@ function App() {
       customer.totalSpent += Number(debt.totalAmount || 0)
       customer.totalPaid += Number(debt.paidAmount || 0)
       customer.totalPending += Number(debt.remainingAmount || 0)
-      ;(debt.items || []).forEach((item) => {
-        const key = productTitle(item)
-        customer.productCounts.set(key, (customer.productCounts.get(key) || 0) + Number(item.quantity || 0))
-      })
+        ; (debt.items || []).forEach((item) => {
+          const key = productTitle(item)
+          customer.productCounts.set(key, (customer.productCounts.get(key) || 0) + Number(item.quantity || 0))
+        })
     })
 
     return Array.from(map.values())
@@ -2042,224 +2042,224 @@ function App() {
         {activeTab === 'ventas' && (
           <>
             <div className="sales-workspace">
-            <div className="stats-row">
-              <div className="stat-card">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
-                  <span className="material-symbols-outlined" style={{ color: 'var(--accent)', background: 'var(--accent-soft)', padding: '5px', borderRadius: '8px', fontSize: '1.1rem' }}>shopping_bag</span>
-                  <span className="stat-label" style={{ margin: 0 }}>Productos en venta</span>
+              <div className="stats-row">
+                <div className="stat-card">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
+                    <span className="material-symbols-outlined" style={{ color: 'var(--accent)', background: 'var(--accent-soft)', padding: '5px', borderRadius: '8px', fontSize: '1.1rem' }}>shopping_bag</span>
+                    <span className="stat-label" style={{ margin: 0 }}>Productos en venta</span>
+                  </div>
+                  <span className="stat-value">{cart.length}</span>
                 </div>
-                <span className="stat-value">{cart.length}</span>
-              </div>
-              <div className="stat-card">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
-                  <span className="material-symbols-outlined" style={{ color: 'var(--accent)', background: 'var(--accent-soft)', padding: '5px', borderRadius: '8px', fontSize: '1.1rem' }}>payments</span>
-                  <span className="stat-label" style={{ margin: 0 }}>Total a cobrar</span>
+                <div className="stat-card">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
+                    <span className="material-symbols-outlined" style={{ color: 'var(--accent)', background: 'var(--accent-soft)', padding: '5px', borderRadius: '8px', fontSize: '1.1rem' }}>payments</span>
+                    <span className="stat-label" style={{ margin: 0 }}>Total a cobrar</span>
+                  </div>
+                  <span className="stat-value accent">RD${cartTotal.toFixed(2)}</span>
                 </div>
-                <span className="stat-value accent">RD${cartTotal.toFixed(2)}</span>
-              </div>
-            </div>
-
-            {/* Product list */}
-            <div className="sales-products-panel">
-              <div className="section-head" style={{ marginBottom: 14 }}>
-                <div className="section-title-row">
-                  <span className="material-symbols-outlined">point_of_sale</span>
-                  <span className="section-title">Vender</span>
-                </div>
-                <CostVisibilityToggle showCosts={showCosts} onChange={setShowCosts} />
               </div>
 
-              <SmartSearch
-                value={salesSearch}
-                onChange={setSalesSearch}
-                placeholder="Buscar producto, tipo o gramos"
-                count={`${filteredSalesProducts.length} productos`}
-              >
-                <GramFilter value={salesGramFilter} options={sizeOptions} onChange={setSalesGramFilter} />
-                <GramFilter value={salesTypeFilter} options={typeOptions} onChange={setSalesTypeFilter} />
-              </SmartSearch>
+              {/* Product list */}
+              <div className="sales-products-panel">
+                <div className="section-head" style={{ marginBottom: 14 }}>
+                  <div className="section-title-row">
+                    <span className="material-symbols-outlined">point_of_sale</span>
+                    <span className="section-title">Vender</span>
+                  </div>
+                  <CostVisibilityToggle showCosts={showCosts} onChange={setShowCosts} />
+                </div>
 
-              <ul className="product-list">
-                {filteredSalesProducts.length === 0 && (
-                  <li className="empty-state">No hay productos con ese filtro</li>
-                )}
-                {salesPagination.items.map((product) => (
-                  <li key={product.id} className="product-item product-unified-card">
-                    <div className="inv-card-img-wrap" onClick={() => setViewImage({ src: product.image, name: productTitle(product) })}>
-                      <img className="inv-card-img" src={product.image} alt={product.name} loading="lazy" decoding="async" />
-                      <span className={`stock-dot stock-${stockLevel(product.stock)}`} />
-                    </div>
+                <SmartSearch
+                  value={salesSearch}
+                  onChange={setSalesSearch}
+                  placeholder="Buscar producto, tipo o gramos"
+                  count={`${filteredSalesProducts.length} productos`}
+                >
+                  <GramFilter value={salesGramFilter} options={sizeOptions} onChange={setSalesGramFilter} />
+                  <GramFilter value={salesTypeFilter} options={typeOptions} onChange={setSalesTypeFilter} />
+                </SmartSearch>
 
-                    <div className="inv-card-body">
-                      <div className="inv-card-top">
-                        <span className="inv-card-name">{productTitle(product)}</span>
-                        <span className={`badge ${product.stock <= 0 ? 'danger-badge' : ''}`}>
-                          {product.size}
-                        </span>
+                <ul className="product-list">
+                  {filteredSalesProducts.length === 0 && (
+                    <li className="empty-state">No hay productos con ese filtro</li>
+                  )}
+                  {salesPagination.items.map((product) => (
+                    <li key={product.id} className="product-item product-unified-card">
+                      <div className="inv-card-img-wrap" onClick={() => setViewImage({ src: product.image, name: productTitle(product) })}>
+                        <img className="inv-card-img" src={product.image} alt={product.name} loading="lazy" decoding="async" />
+                        <span className={`stock-dot stock-${stockLevel(product.stock)}`} />
                       </div>
 
-                      <div className="inv-card-prices">
-                        <span className="inv-price-sale">RD${product.salePrice.toFixed(2)}</span>
-                        {showCosts && (
-                          <>
-                            <span className="inv-price-sep">·</span>
-                            <span className="inv-price-buy">Compra RD${product.purchasePrice.toFixed(2)}</span>
-                          </>
-                        )}
-                        {!showCosts && <span className="inv-price-buy-hidden">***</span>}
-                      </div>
-
-                      <div className="inv-card-footer">
-                        <div className="inv-stock-wrap">
-                          <span className={`inv-stock-badge inv-stock-${stockLevel(product.stock)}`}>
-                            <span className="material-symbols-outlined" style={{ fontSize: '0.8rem' }}>inventory_2</span>
-                            {product.stock} uds
+                      <div className="inv-card-body">
+                        <div className="inv-card-top">
+                          <span className="inv-card-name">{productTitle(product)}</span>
+                          <span className={`badge ${product.stock <= 0 ? 'danger-badge' : ''}`}>
+                            {product.size}
                           </span>
                         </div>
-                        <div className="product-actions">
-                          <button
-                            className="small-btn product-sale-btn"
-                            onClick={() => addToCart(product)}
-                            disabled={product.stock <= 0}
-                            title="Agregar al carrito"
-                            aria-label={`Agregar ${productTitle(product)} al carrito`}
-                          >
-                            <span className="material-symbols-outlined">add_shopping_cart</span>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-              <Pagination
-                page={salesPagination.page}
-                totalPages={salesPagination.totalPages}
-                start={salesPagination.start}
-                end={salesPagination.end}
-                total={filteredSalesProducts.length}
-                onPageChange={setSalesPage}
-              />
-            </div>
 
-            {/* Cart */}
-            <div className="cart-card">
-              <div className="section-head">
-                <div className="section-title-row">
-                  <span className="material-symbols-outlined">shopping_bag</span>
-                  <span className="section-title">Carrito</span>
-                </div>
-                {cart.length > 0 && (
-                  <span className="filter-count-badge">
-                    {cart.length} {cart.length === 1 ? 'producto' : 'productos'}
-                  </span>
-                )}
-              </div>
-
-              {cart.length === 0 ? (
-                <div className="empty-state">
-                  <span className="material-symbols-outlined empty-icon">shopping_cart</span>
-                  Agrega productos para empezar la venta
-                </div>
-              ) : (
-                <ul className="cart-list">
-                  {cart.map((item) => (
-                    <li key={item.id} className="cart-item">
-                      <div className="cart-preview">
-                        <img className="cart-thumb cart-thumb-clickable" src={item.image} alt={item.name} loading="lazy" decoding="async" onClick={() => setViewImage({ src: item.image, name: productTitle(item) })} />
-                        <div className="cart-info">
-                          <span className="cart-name">{productTitle(item)}</span>
-                          <span className="cart-qty-price">{item.quantity} × RD${item.salePrice.toFixed(2)}</span>
+                        <div className="inv-card-prices">
+                          <span className="inv-price-sale">RD${product.salePrice.toFixed(2)}</span>
+                          {showCosts && (
+                            <>
+                              <span className="inv-price-sep">·</span>
+                              <span className="inv-price-buy">Compra RD${product.purchasePrice.toFixed(2)}</span>
+                            </>
+                          )}
+                          {!showCosts && <span className="inv-price-buy-hidden">***</span>}
                         </div>
-                      </div>
-                      <div className="cart-actions">
-                        <button className="ghost-small edit-price" onClick={() => openPriceEdit(item)} title="Editar precio" aria-label={`Editar precio de ${productTitle(item)}`}>
-                          <span className="material-symbols-outlined">edit_square</span>
-                        </button>
-                        <button className="ghost-small danger" onClick={() => removeFromCart(item)} title="Quitar" aria-label={`Quitar ${productTitle(item)} del carrito`}>
-                          <span className="material-symbols-outlined">remove_shopping_cart</span>
-                        </button>
+
+                        <div className="inv-card-footer">
+                          <div className="inv-stock-wrap">
+                            <span className={`inv-stock-badge inv-stock-${stockLevel(product.stock)}`}>
+                              <span className="material-symbols-outlined" style={{ fontSize: '0.8rem' }}>inventory_2</span>
+                              {product.stock} uds
+                            </span>
+                          </div>
+                          <div className="product-actions">
+                            <button
+                              className="small-btn product-sale-btn"
+                              onClick={() => addToCart(product)}
+                              disabled={product.stock <= 0}
+                              title="Agregar al carrito"
+                              aria-label={`Agregar ${productTitle(product)} al carrito`}
+                            >
+                              <span className="material-symbols-outlined">add_shopping_cart</span>
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </li>
                   ))}
                 </ul>
-              )}
+                <Pagination
+                  page={salesPagination.page}
+                  totalPages={salesPagination.totalPages}
+                  start={salesPagination.start}
+                  end={salesPagination.end}
+                  total={filteredSalesProducts.length}
+                  onPageChange={setSalesPage}
+                />
+              </div>
 
-              <div className="checkout-row">
-                <span>Total</span>
-                <span className="checkout-total">RD${cartTotal.toFixed(2)}</span>
-              </div>
-              <div className="payment-toggle">
-                <button
-                  type="button"
-                  className={paymentMethod === 'cash' ? 'active' : ''}
-                  onClick={() => setPaymentMethod('cash')}
-                >
-                  <span className="material-symbols-outlined">payments</span>
-                  Efectivo
-                </button>
-                <button
-                  type="button"
-                  className={paymentMethod === 'transfer' ? 'active' : ''}
-                  onClick={() => setPaymentMethod('transfer')}
-                >
-                  <span className="material-symbols-outlined">sync_alt</span>
-                  Transferencia
-                </button>
-                <button
-                  type="button"
-                  className={paymentMethod === 'debt' ? 'active debt-active' : ''}
-                  onClick={() => setPaymentMethod('debt')}
-                >
-                  <span className="material-symbols-outlined">contract</span>
-                  Fiar
-                </button>
-              </div>
-              {paymentMethod === 'debt' && (
-                <div className="debt-sale-panel">
-                  <label className="form-group">
-                    <span>Cliente</span>
-                    <button 
-                      type="button" 
-                      className="customer-picker-btn"
-                      onClick={() => setCustomerPickerOpen(true)}
-                    >
-                      <span className="material-symbols-outlined">person</span>
-                      {debtSaleForm.customerName ? (
-                        <span className="customer-picker-value">{debtSaleForm.customerName}</span>
-                      ) : (
-                        <span className="customer-picker-placeholder">Seleccionar cliente</span>
-                      )}
-                      <span className="material-symbols-outlined" style={{marginLeft: 'auto', fontSize: '1rem', color: 'var(--text-3)'}}>chevron_right</span>
-                    </button>
-                  </label>
-                  <label className="form-group">
-                    <span>Abono inicial</span>
-                    <div className="input-with-icon">
-                      <span className="material-symbols-outlined">add_card</span>
-                      <input
-                        className="form-input"
-                        type="number"
-                        min="0"
-                        max={Math.max(0, cartTotal - 0.01)}
-                        step="0.01"
-                        value={debtSaleForm.paidAmount}
-                        onChange={(event) => setDebtSaleForm((current) => ({ ...current, paidAmount: event.target.value }))}
-                        placeholder="0.00"
-                      />
-                    </div>
-                  </label>
-                  <div className="debt-sale-summary">
-                    <span>Pendiente</span>
-                    <strong>{money(Math.max(0, cartTotal - Number(debtSaleForm.paidAmount || 0)))}</strong>
+              {/* Cart */}
+              <div className="cart-card">
+                <div className="section-head">
+                  <div className="section-title-row">
+                    <span className="material-symbols-outlined">shopping_bag</span>
+                    <span className="section-title">Carrito</span>
                   </div>
+                  {cart.length > 0 && (
+                    <span className="filter-count-badge">
+                      {cart.length} {cart.length === 1 ? 'producto' : 'productos'}
+                    </span>
+                  )}
                 </div>
-              )}
-              <button className="primary-btn full-width" onClick={checkout} disabled={cart.length === 0 || savingAction === 'checkout'}>
-                <span className="material-symbols-outlined">{paymentMethod === 'debt' ? 'contract' : 'point_of_sale'}</span>
-                {savingAction === 'checkout' ? 'Guardando...' : paymentMethod === 'debt' ? 'Registrar deuda' : 'Vender'}
-              </button>
-            </div>
+
+                {cart.length === 0 ? (
+                  <div className="empty-state">
+                    <span className="material-symbols-outlined empty-icon">shopping_cart</span>
+                    Agrega productos para empezar la venta
+                  </div>
+                ) : (
+                  <ul className="cart-list">
+                    {cart.map((item) => (
+                      <li key={item.id} className="cart-item">
+                        <div className="cart-preview">
+                          <img className="cart-thumb cart-thumb-clickable" src={item.image} alt={item.name} loading="lazy" decoding="async" onClick={() => setViewImage({ src: item.image, name: productTitle(item) })} />
+                          <div className="cart-info">
+                            <span className="cart-name">{productTitle(item)}</span>
+                            <span className="cart-qty-price">{item.quantity} × RD${item.salePrice.toFixed(2)}</span>
+                          </div>
+                        </div>
+                        <div className="cart-actions">
+                          <button className="ghost-small edit-price" onClick={() => openPriceEdit(item)} title="Editar precio" aria-label={`Editar precio de ${productTitle(item)}`}>
+                            <span className="material-symbols-outlined">edit_square</span>
+                          </button>
+                          <button className="ghost-small danger" onClick={() => removeFromCart(item)} title="Quitar" aria-label={`Quitar ${productTitle(item)} del carrito`}>
+                            <span className="material-symbols-outlined">remove_shopping_cart</span>
+                          </button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                <div className="checkout-row">
+                  <span>Total</span>
+                  <span className="checkout-total">RD${cartTotal.toFixed(2)}</span>
+                </div>
+                <div className="payment-toggle">
+                  <button
+                    type="button"
+                    className={paymentMethod === 'cash' ? 'active' : ''}
+                    onClick={() => setPaymentMethod('cash')}
+                  >
+                    <span className="material-symbols-outlined">payments</span>
+                    Efectivo
+                  </button>
+                  <button
+                    type="button"
+                    className={paymentMethod === 'transfer' ? 'active' : ''}
+                    onClick={() => setPaymentMethod('transfer')}
+                  >
+                    <span className="material-symbols-outlined">sync_alt</span>
+                    Transferencia
+                  </button>
+                  <button
+                    type="button"
+                    className={paymentMethod === 'debt' ? 'active debt-active' : ''}
+                    onClick={() => setPaymentMethod('debt')}
+                  >
+                    <span className="material-symbols-outlined">contract</span>
+                    Fiar
+                  </button>
+                </div>
+                {paymentMethod === 'debt' && (
+                  <div className="debt-sale-panel">
+                    <label className="form-group">
+                      <span>Cliente</span>
+                      <button
+                        type="button"
+                        className="customer-picker-btn"
+                        onClick={() => setCustomerPickerOpen(true)}
+                      >
+                        <span className="material-symbols-outlined">person</span>
+                        {debtSaleForm.customerName ? (
+                          <span className="customer-picker-value">{debtSaleForm.customerName}</span>
+                        ) : (
+                          <span className="customer-picker-placeholder">Seleccionar cliente</span>
+                        )}
+                        <span className="material-symbols-outlined" style={{ marginLeft: 'auto', fontSize: '1rem', color: 'var(--text-3)' }}>chevron_right</span>
+                      </button>
+                    </label>
+                    <label className="form-group">
+                      <span>Abono inicial</span>
+                      <div className="input-with-icon">
+                        <span className="material-symbols-outlined">add_card</span>
+                        <input
+                          className="form-input"
+                          type="number"
+                          min="0"
+                          max={Math.max(0, cartTotal - 0.01)}
+                          step="0.01"
+                          value={debtSaleForm.paidAmount}
+                          onChange={(event) => setDebtSaleForm((current) => ({ ...current, paidAmount: event.target.value }))}
+                          placeholder="0.00"
+                        />
+                      </div>
+                    </label>
+                    <div className="debt-sale-summary">
+                      <span>Pendiente</span>
+                      <strong>{money(Math.max(0, cartTotal - Number(debtSaleForm.paidAmount || 0)))}</strong>
+                    </div>
+                  </div>
+                )}
+                <button className="primary-btn full-width" onClick={checkout} disabled={cart.length === 0 || savingAction === 'checkout'}>
+                  <span className="material-symbols-outlined">{paymentMethod === 'debt' ? 'contract' : 'point_of_sale'}</span>
+                  {savingAction === 'checkout' ? 'Guardando...' : paymentMethod === 'debt' ? 'Registrar deuda' : 'Vender'}
+                </button>
+              </div>
             </div>
           </>
         )}
@@ -2419,7 +2419,7 @@ function App() {
                           className="form-input"
                           value={stockForm.name}
                           onChange={(e) => setStockForm({ ...stockForm, name: e.target.value })}
-                          placeholder="Ej. Zaza 1g"
+                          placeholder="Ej. Zaza Boyz"
                           required
                         />
                       </div>
@@ -2668,12 +2668,12 @@ function App() {
         onClose={() => setCustomerPickerOpen(false)}
       />
 
-      <ProductImageModal 
+      <ProductImageModal
         src={viewImage?.src}
         name={viewImage?.name}
         onClose={() => setViewImage(null)}
       />
-      
+
       <ToastHost toasts={toasts} onDismiss={dismissToast} />
     </div>
   )
