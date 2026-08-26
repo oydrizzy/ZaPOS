@@ -503,7 +503,6 @@ function LoginScreen({ form, setForm, onLogin, isSubmitting }) {
   return (
     <div className="plain-auth-screen">
       <main className="plain-auth-card">
-        <img className="plain-auth-logo" alt="Logo" />
         <h1 className="plain-auth-title">Iniciar Sesión</h1>
 
         <form className="plain-auth-form" onSubmit={onLogin}>
