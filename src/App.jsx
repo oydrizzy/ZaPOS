@@ -79,8 +79,11 @@ function stockLevel(stock) {
   return 'ok'
 }
 
-function money(value) {
-  return `RD$${Number(value || 0).toFixed(2)}`
+const formatCurrency = (amount) => {
+  return `RD$${Number(amount || 0).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })}`;
 }
 
 function productTitle(product) {
@@ -447,7 +450,7 @@ function CustomerPicker({ open, customers, selectedName, onSelect, onClose }) {
                     </div>
                     {hasPending ? (
                       <span className="customer-picker-debt">
-                        Debe {money(customer.totalPending)}
+                        Debe {formatCurrency(customer.totalPending)}
                       </span>
                     ) : (
                       <span className="customer-picker-debt paid">Al día</span>
@@ -543,7 +546,7 @@ function PaymentModal({ open, debt, onClose, onSubmit, isSaving }) {
 
         <div className="payment-modal-balance">
           <span className="payment-modal-balance-label">Saldo pendiente</span>
-          <span className="payment-modal-balance-amount">{money(remaining)}</span>
+          <span className="payment-modal-balance-amount">{formatCurrency(remaining)}</span>
         </div>
 
         <form className="payment-modal-form" onSubmit={handleSubmit}>
@@ -559,7 +562,7 @@ function PaymentModal({ open, debt, onClose, onSubmit, isSaving }) {
                 step="0.01"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                placeholder={`Máx ${money(remaining)}`}
+                placeholder={`Máx ${formatCurrency(remaining)}`}
                 disabled={isSaving}
                 autoFocus
                 required
@@ -875,13 +878,13 @@ function CashModule({ transactions, summary, movementForm, setMovementForm, addC
     <div className="cash-shell">
       <div className="cash-hero">
         <span className="cash-label">Total en caja</span>
-        <strong>{money(summary.registeredBalance)}</strong>
+        <strong>{formatCurrency(summary.registeredBalance)}</strong>
       </div>
 
       <div className="cash-grid cash-grid-simple">
         <div className="cash-stat">
           <span>Ventas generales</span>
-          <strong>{money(summary.salesTotal)}</strong>
+          <strong>{formatCurrency(summary.salesTotal)}</strong>
         </div>
       </div>
 
@@ -999,7 +1002,7 @@ function CashModule({ transactions, summary, movementForm, setMovementForm, addC
                   )}
                 </div>
                 <div className="cash-log-amount">
-                  <strong>{entry.type === 'expense' ? '-' : '+'}{money(entry.amount)}</strong>
+                  <strong>{entry.type === 'expense' ? '-' : '+'}{formatCurrency(entry.amount)}</strong>
                   <button type="button" className="revert-log-btn" onClick={() => setRevertTarget(entry)}>
                     <span className="material-symbols-outlined">undo</span>
                     Revertir
@@ -1037,7 +1040,7 @@ function CashModule({ transactions, summary, movementForm, setMovementForm, addC
         {revertTarget && (
           <div className="revert-summary">
             <span>{getEntryLabel(revertTarget)}</span>
-            <strong>{money(revertTarget.amount)}</strong>
+            <strong>{formatCurrency(revertTarget.amount)}</strong>
             {revertTarget.note && <small>{revertTarget.note}</small>}
           </div>
         )}
@@ -1157,25 +1160,25 @@ function EstimatesModule({ products, cashSummary }) {
     <div className="estimate-shell">
       <div className="estimate-hero">
         <span>Ganancia proyectada</span>
-        <strong>{money(totals.profit)}</strong>
+        <strong>{formatCurrency(totals.profit)}</strong>
         <small>Ganancias en precio venta, sin la inversión</small>
       </div>
 
       <div className="estimate-main-grid">
         <div className="estimate-big-card">
           <span>Inventario disponible</span>
-          <strong>{money(totals.cost)}</strong>
+          <strong>{formatCurrency(totals.cost)}</strong>
           <small>Inversión actual en inventario</small>
         </div>
         <div className="estimate-big-card success">
           <span>Venta total si vendo todo</span>
-          <strong>{money(totals.revenue)}</strong>
+          <strong>{formatCurrency(totals.revenue)}</strong>
           <small>Suma de inventario al precio de venta</small>
         </div>
         <div className="estimate-big-card cash-projection">
           <span>Total en caja + venta total</span>
-          <strong>{money(projectedCashAndInventory)}</strong>
-          <small>Caja actual {money(cashTotal)} + inventario</small>
+          <strong>{formatCurrency(projectedCashAndInventory)}</strong>
+          <small>Caja actual {formatCurrency(cashTotal)} + inventario</small>
         </div>
       </div>
 
@@ -1233,7 +1236,7 @@ function EstimatesModule({ products, cashSummary }) {
               <div className="estimate-focus-grid">
                 <div>
                   <span>Costo unidad</span>
-                  <strong>{money(selectedRow.purchasePrice)}</strong>
+                  <strong>{formatCurrency(selectedRow.purchasePrice)}</strong>
                 </div>
                 <div>
                   <span>Unidades</span>
@@ -1241,19 +1244,19 @@ function EstimatesModule({ products, cashSummary }) {
                 </div>
                 <div>
                   <span>Costo total</span>
-                  <strong>{money(selectedRow.cost)}</strong>
+                  <strong>{formatCurrency(selectedRow.cost)}</strong>
                 </div>
                 <div>
                   <span>Venta total</span>
-                  <strong>{money(selectedRow.revenue)}</strong>
+                  <strong>{formatCurrency(selectedRow.revenue)}</strong>
                 </div>
                 <div>
                   <span>Ganancia total</span>
-                  <strong>{money(selectedRow.profit)}</strong>
+                  <strong>{formatCurrency(selectedRow.profit)}</strong>
                 </div>
                 <div>
                   <span>Ganancia unidad</span>
-                  <strong>{money(selectedRow.unitProfit)}</strong>
+                  <strong>{formatCurrency(selectedRow.unitProfit)}</strong>
                 </div>
               </div>
             </div>
@@ -1288,7 +1291,7 @@ function EstimatesModule({ products, cashSummary }) {
                   </div>
                   <div className="estimate-item-summary">
                     <span>Ganaria</span>
-                    <strong>{money(row.profit)}</strong>
+                    <strong>{formatCurrency(row.profit)}</strong>
                   </div>
                   <span className="material-symbols-outlined estimate-chevron">
                     {isExpanded ? 'expand_less' : 'expand_more'}
@@ -1296,11 +1299,11 @@ function EstimatesModule({ products, cashSummary }) {
                 </button>
                 {isExpanded && (
                   <div className="estimate-values">
-                    <span><em>Costo unidad</em><b>{money(row.purchasePrice)}</b></span>
+                    <span><em>Costo unidad</em><b>{formatCurrency(row.purchasePrice)}</b></span>
                     <span><em>Unidades</em><b>{row.stock}</b></span>
-                    <span><em>Invertido</em><b>{money(row.purchasePrice)} x {row.stock} = {money(row.cost)}</b></span>
-                    <span><em>Venderia</em><b>{money(row.salePrice)} x {row.stock} = {money(row.revenue)}</b></span>
-                    <strong><em>Ganaria</em><b>{money(row.profit)}</b></strong>
+                    <span><em>Invertido</em><b>{formatCurrency(row.purchasePrice)} x {row.stock} = {formatCurrency(row.cost)}</b></span>
+                    <span><em>Venderia</em><b>{formatCurrency(row.salePrice)} x {row.stock} = {formatCurrency(row.revenue)}</b></span>
+                    <strong><em>Ganaria</em><b>{formatCurrency(row.profit)}</b></strong>
                   </div>
                 )}
               </li>
@@ -1440,7 +1443,7 @@ function DebtsModule({ debts, customers, addDebtPayment, paymentSavingId }) {
     <div className="debt-shell">
       <div className="debt-hero">
         <span>Cuentas por cobrar</span>
-        <strong>{money(debtTotals.pending)}</strong>
+        <strong>{formatCurrency(debtTotals.pending)}</strong>
         <small>Saldo pendiente, no se suma a caja hasta que se abone</small>
       </div>
 
@@ -1450,7 +1453,7 @@ function DebtsModule({ debts, customers, addDebtPayment, paymentSavingId }) {
             <span className="material-symbols-outlined">payments</span>
             <span>Abonado</span>
           </div>
-          <strong>{money(debtTotals.paid)}</strong>
+          <strong>{formatCurrency(debtTotals.paid)}</strong>
         </div>
         <div className="debt-stat-card">
           <div className="debt-stat-label">
@@ -1543,7 +1546,7 @@ function DebtsModule({ debts, customers, addDebtPayment, paymentSavingId }) {
                       <small>Debe</small>
                       <strong>
                         <span className="material-symbols-outlined">account_balance_wallet</span>
-                        {money(customer.totalPending)}
+                        {formatCurrency(customer.totalPending)}
                       </strong>
                     </div>
                   </div>
@@ -1559,15 +1562,15 @@ function DebtsModule({ debts, customers, addDebtPayment, paymentSavingId }) {
                     <div className="debt-client-summary-stats">
                       <div className="debt-client-summary-stat">
                         <span className="debt-client-summary-stat-label">Total</span>
-                        <span className="debt-client-summary-stat-value">{money(customer.totalSpent)}</span>
+                        <span className="debt-client-summary-stat-value">{formatCurrency(customer.totalSpent)}</span>
                       </div>
                       <div className="debt-client-summary-stat">
                         <span className="debt-client-summary-stat-label">Abonado</span>
-                        <span className="debt-client-summary-stat-value">{money(customer.totalPaid)}</span>
+                        <span className="debt-client-summary-stat-value">{formatCurrency(customer.totalPaid)}</span>
                       </div>
                       <div className={`debt-client-summary-stat ${hasPending ? 'stat-pending' : ''}`}>
                         <span className="debt-client-summary-stat-label">Pendiente</span>
-                        <span className="debt-client-summary-stat-value">{money(customer.totalPending)}</span>
+                        <span className="debt-client-summary-stat-value">{formatCurrency(customer.totalPending)}</span>
                       </div>
                     </div>
 
@@ -1600,15 +1603,15 @@ function DebtsModule({ debts, customers, addDebtPayment, paymentSavingId }) {
                             <div className="debt-account-stats">
                               <div className="debt-account-stat">
                                 <span className="debt-account-stat-label">Total</span>
-                                <span className="debt-account-stat-value">{money(debt.totalAmount)}</span>
+                                <span className="debt-account-stat-value">{formatCurrency(debt.totalAmount)}</span>
                               </div>
                               <div className="debt-account-stat">
                                 <span className="debt-account-stat-label">Abonado</span>
-                                <span className="debt-account-stat-value">{money(debt.paidAmount)}</span>
+                                <span className="debt-account-stat-value">{formatCurrency(debt.paidAmount)}</span>
                               </div>
                               <div className={`debt-account-stat ${!isPaid ? 'pending' : ''}`}>
                                 <span className="debt-account-stat-label">Pendiente</span>
-                                <span className="debt-account-stat-value">{money(remaining)}</span>
+                                <span className="debt-account-stat-value">{formatCurrency(remaining)}</span>
                               </div>
                             </div>
 
@@ -1629,7 +1632,7 @@ function DebtsModule({ debts, customers, addDebtPayment, paymentSavingId }) {
                                         {formatDate(payment.date)}
                                       </span>
                                       <span className="debt-account-history-amount">
-                                        +{money(payment.amount)}
+                                        +{formatCurrency(payment.amount)}
                                       </span>
                                     </div>
                                   ))}
@@ -2158,7 +2161,7 @@ function App() {
       setCart([])
       setPaymentMethod('cash')
       setDebtSaleForm({ customerName: '', paidAmount: '' })
-      showToast(paymentMethod === 'debt' ? `Deuda registrada para ${customerName}` : `Venta registrada por ${money(cartTotal)}`)
+      showToast(paymentMethod === 'debt' ? `Deuda registrada para ${customerName}` : `Venta registrada por ${formatCurrency(cartTotal)}`)
     } catch (error) {
       showToast(error.message, 'error')
     } finally {
@@ -2175,7 +2178,7 @@ function App() {
       return false
     }
     if (amount > remaining) {
-      showToast(`No puede pasar de ${money(remaining)}`, 'error')
+      showToast(`No puede pasar de ${formatCurrency(remaining)}`, 'error')
       return false
     }
     setSavingAction(`debt-payment-${debt.id}`)
@@ -2186,7 +2189,7 @@ function App() {
         paymentMethod: draft.paymentMethod || 'cash',
       })
       await refreshAppState()
-      showToast(`Abono registrado: ${money(amount)}`)
+      showToast(`Abono registrado: ${formatCurrency(amount)}`)
       return true
     } catch (error) {
       showToast(error.message, 'error')
@@ -2391,7 +2394,7 @@ function App() {
                     <span className="material-symbols-outlined" style={{ color: 'var(--accent)', background: 'var(--accent-soft)', padding: '5px', borderRadius: '8px', fontSize: '1.1rem' }}>payments</span>
                     <span className="stat-label" style={{ margin: 0 }}>Total a cobrar</span>
                   </div>
-                  <span className="stat-value accent">RD${cartTotal.toFixed(2)}</span>
+                  <span className="stat-value accent">{formatCurrency(cartTotal)}</span>
                 </div>
               </div>
 
@@ -2441,11 +2444,11 @@ function App() {
                         </div>
 
                         <div className="inv-card-prices">
-                          <span className="inv-price-sale">RD${product.salePrice.toFixed(2)}</span>
+                          <span className="inv-price-sale">{formatCurrency(product.salePrice)}</span>
                           {showCosts && (
                             <>
                               <span className="inv-price-sep">·</span>
-                              <span className="inv-price-buy">Compra RD${product.purchasePrice.toFixed(2)}</span>
+                              <span className="inv-price-buy">Compra {formatCurrency(product.purchasePrice)}</span>
                             </>
                           )}
                           {!showCosts && <span className="inv-price-buy-hidden">***</span>}
@@ -2511,7 +2514,7 @@ function App() {
                           <img className="cart-thumb cart-thumb-clickable" src={item.image} alt={item.name} loading="lazy" decoding="async" onClick={() => setViewImage({ src: item.image, name: productTitle(item) })} />
                           <div className="cart-info">
                             <span className="cart-name">{productTitle(item)}</span>
-                            <span className="cart-qty-price">{item.quantity} × RD${item.salePrice.toFixed(2)}</span>
+                            <span className="cart-qty-price">{item.quantity} × {formatCurrency(item.salePrice)}</span>
                           </div>
                         </div>
                         <div className="cart-actions">
@@ -2529,7 +2532,7 @@ function App() {
 
                 <div className="checkout-row">
                   <span>Total</span>
-                  <span className="checkout-total">RD${cartTotal.toFixed(2)}</span>
+                  <span className="checkout-total">{formatCurrency(cartTotal)}</span>
                 </div>
                 <div className="payment-toggle">
                   <button
@@ -2593,7 +2596,7 @@ function App() {
                     </label>
                     <div className="debt-sale-summary">
                       <span>Pendiente</span>
-                      <strong>{money(Math.max(0, cartTotal - Number(debtSaleForm.paidAmount || 0)))}</strong>
+                      <strong>{formatCurrency(Math.max(0, cartTotal - Number(debtSaleForm.paidAmount || 0)))}</strong>
                     </div>
                   </div>
                 )}
@@ -2626,7 +2629,7 @@ function App() {
                       <span className="material-symbols-outlined" style={{ color: 'var(--accent)', background: 'var(--accent-soft)', padding: '5px', borderRadius: '8px', fontSize: '1.1rem' }}>request_quote</span>
                       <span className="stat-label" style={{ margin: 0 }}>Valor total</span>
                     </div>
-                    <span className="stat-value accent">RD${totalInventoryValue.toFixed(0)}</span>
+                    <span className="stat-value accent">{formatCurrency(totalInventoryValue)}</span>
                   </div>
                 </div>
 
@@ -2683,11 +2686,11 @@ function App() {
 
                           {/* Price row */}
                           <div className="inv-card-prices">
-                            <span className="inv-price-sale">RD${product.salePrice.toFixed(2)}</span>
+                            <span className="inv-price-sale">{formatCurrency(product.salePrice)}</span>
                             {showCosts && (
                               <>
                                 <span className="inv-price-sep">·</span>
-                                <span className="inv-price-buy">Compra RD${product.purchasePrice.toFixed(2)}</span>
+                                <span className="inv-price-buy">Compra {formatCurrency(product.purchasePrice)}</span>
                               </>
                             )}
                             {!showCosts && <span className="inv-price-buy-hidden">***</span>}
