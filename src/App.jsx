@@ -217,8 +217,14 @@ function FilterSheet({ isOpen, onClose, onApply, onClear, title = 'Filtros', chi
           {children}
         </div>
         <div className="filter-actions">
-          <button className="secondary-btn" onClick={onClear}>Limpiar</button>
-          <button className="primary-btn" onClick={onApply}>Aplicar</button>
+          <button className="secondary-btn" onClick={onClear}>
+            <span className="material-symbols-outlined">clear_all</span>
+            Limpiar
+          </button>
+          <button className="primary-btn" onClick={onApply}>
+            <span className="material-symbols-outlined">check_circle</span>
+            Aplicar
+          </button>
         </div>
       </div>
     </div>
