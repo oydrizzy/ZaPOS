@@ -616,7 +616,15 @@ function SmartSearch({
   placeholder,
   count,
   children,
+  onReset,
+  hasActiveFilters,
 }) {
+  const showReset = hasActiveFilters !== undefined ? hasActiveFilters : false;
+  const handleReset = () => {
+    if (onReset) onReset();
+    else onChange('');
+  };
+
   return (
     <div className="smart-filter-panel">
       <label className="smart-search">
@@ -636,6 +644,11 @@ function SmartSearch({
       </label>
       <div className="smart-filter-actions">
         {children}
+        {showReset && (
+          <button type="button" onClick={handleReset} className="reset-filters-btn" title="Restablecer filtros" aria-label="Restablecer filtros">
+            <span className="material-symbols-outlined">filter_alt_off</span>
+          </button>
+        )}
         <span className="filter-count-badge">{count}</span>
       </div>
     </div>
@@ -984,6 +997,12 @@ function EstimatesModule({ products, cashSummary }) {
           onChange={setEstimateSearch}
           placeholder="Buscar producto, tipo o gramos"
           count={`${filteredRows.length} productos`}
+          onReset={() => {
+            setEstimateSearch('');
+            setEstimateGramFilter('Todos');
+            setEstimateTypeFilter('Todos');
+          }}
+          hasActiveFilters={estimateSearch !== '' || estimateGramFilter !== 'Todos' || estimateTypeFilter !== 'Todos'}
         >
           <GramFilter value={estimateGramFilter} options={sizeOptions} onChange={setEstimateGramFilter} />
           <GramFilter value={estimateTypeFilter} options={typeOptions} onChange={setEstimateTypeFilter} />
@@ -2074,6 +2093,12 @@ function App() {
                   onChange={setSalesSearch}
                   placeholder="Buscar producto, tipo o gramos"
                   count={`${filteredSalesProducts.length} productos`}
+                  onReset={() => {
+                    setSalesSearch('');
+                    setSalesGramFilter('Todos');
+                    setSalesTypeFilter('Todos');
+                  }}
+                  hasActiveFilters={salesSearch !== '' || salesGramFilter !== 'Todos' || salesTypeFilter !== 'Todos'}
                 >
                   <GramFilter value={salesGramFilter} options={sizeOptions} onChange={setSalesGramFilter} />
                   <GramFilter value={salesTypeFilter} options={typeOptions} onChange={setSalesTypeFilter} />
@@ -2309,6 +2334,12 @@ function App() {
                     onChange={setInventorySearch}
                     placeholder="Buscar por nombre, tipo o gramos"
                     count={`${filteredInventoryProducts.length} productos`}
+                    onReset={() => {
+                      setInventorySearch('');
+                      setInventoryGramFilter('Todos');
+                      setInventoryTypeFilter('Todos');
+                    }}
+                    hasActiveFilters={inventorySearch !== '' || inventoryGramFilter !== 'Todos' || inventoryTypeFilter !== 'Todos'}
                   >
                     <GramFilter value={inventoryGramFilter} options={sizeOptions} onChange={setInventoryGramFilter} />
                     <GramFilter value={inventoryTypeFilter} options={typeOptions} onChange={setInventoryTypeFilter} />

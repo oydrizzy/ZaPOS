@@ -662,6 +662,31 @@ button .material-symbols-outlined {
   flex-wrap: wrap;
 }
 
+.reset-filters-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 38px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--danger-soft);
+  color: var(--danger);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  font-size: 0.82rem;
+  font-weight: 800;
+  transition: var(--transition);
+}
+
+.reset-filters-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  transform: scale(0.98);
+}
+
+.reset-filters-btn .material-symbols-outlined {
+  font-size: 1.1rem;
+}
+
 .inv-filter-bar .smart-filter-panel,
 .cash-log-card .smart-filter-panel,
 .estimate-card .smart-filter-panel {
