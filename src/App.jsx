@@ -2042,14 +2042,19 @@ function App() {
         {activeTab === 'ventas' && (
           <>
             <div className="sales-workspace">
-            {/* Stats */}
             <div className="stats-row">
               <div className="stat-card">
-                <span className="stat-label">Productos en venta</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
+                  <span className="material-symbols-outlined" style={{ color: 'var(--accent)', background: 'var(--accent-soft)', padding: '5px', borderRadius: '8px', fontSize: '1.1rem' }}>shopping_bag</span>
+                  <span className="stat-label" style={{ margin: 0 }}>Productos en venta</span>
+                </div>
                 <span className="stat-value">{cart.length}</span>
               </div>
               <div className="stat-card">
-                <span className="stat-label">Total a cobrar</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
+                  <span className="material-symbols-outlined" style={{ color: 'var(--accent)', background: 'var(--accent-soft)', padding: '5px', borderRadius: '8px', fontSize: '1.1rem' }}>payments</span>
+                  <span className="stat-label" style={{ margin: 0 }}>Total a cobrar</span>
+                </div>
                 <span className="stat-value accent">RD${cartTotal.toFixed(2)}</span>
               </div>
             </div>
@@ -2058,8 +2063,8 @@ function App() {
             <div className="sales-products-panel">
               <div className="section-head" style={{ marginBottom: 14 }}>
                 <div className="section-title-row">
-                  <span className="material-symbols-outlined">storefront</span>
-                  <span className="section-title">Productos</span>
+                  <span className="material-symbols-outlined">point_of_sale</span>
+                  <span className="section-title">Vender</span>
                 </div>
                 <CostVisibilityToggle showCosts={showCosts} onChange={setShowCosts} />
               </div>
@@ -2266,29 +2271,35 @@ function App() {
               <div className="inventory-shell">
 
                 {/* Header banners */}
-                <div className="inv-header-grid">
-                  <div className="inv-stat">
-                    <span className="inv-stat-icon material-symbols-outlined">category</span>
-                    <div>
-                      <span className="inv-stat-label">Productos</span>
-                      <span className="inv-stat-value">{products.length}</span>
+                <div className="stats-row">
+                  <div className="stat-card">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
+                      <span className="material-symbols-outlined" style={{ color: 'var(--accent)', background: 'var(--accent-soft)', padding: '5px', borderRadius: '8px', fontSize: '1.1rem' }}>category</span>
+                      <span className="stat-label" style={{ margin: 0 }}>Productos</span>
                     </div>
+                    <span className="stat-value">{products.length}</span>
                   </div>
-                  <div className="inv-stat accent">
-                    <span className="inv-stat-icon material-symbols-outlined">payments</span>
-                    <div>
-                      <span className="inv-stat-label">Valor total</span>
-                      <span className="inv-stat-value">RD${totalInventoryValue.toFixed(0)}</span>
+                  <div className="stat-card">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
+                      <span className="material-symbols-outlined" style={{ color: 'var(--accent)', background: 'var(--accent-soft)', padding: '5px', borderRadius: '8px', fontSize: '1.1rem' }}>request_quote</span>
+                      <span className="stat-label" style={{ margin: 0 }}>Valor total</span>
                     </div>
+                    <span className="stat-value accent">RD${totalInventoryValue.toFixed(0)}</span>
                   </div>
                 </div>
 
                 <div className="section-head" style={{ marginBottom: 14 }}>
-                  <button className="primary-btn" onClick={() => openInventoryForm()} style={{ padding: '8px 16px', minHeight: '36px' }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>add_box</span>
-                    Nuevo
-                  </button>
-                  <CostVisibilityToggle showCosts={showCosts} onChange={setShowCosts} />
+                  <div className="section-title-row">
+                    <span className="material-symbols-outlined">inventory_2</span>
+                    <span className="section-title">Inventario</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <button className="primary-btn" onClick={() => openInventoryForm()} style={{ padding: '8px 16px', minHeight: '36px' }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>add_box</span>
+                      Nuevo
+                    </button>
+                    <CostVisibilityToggle showCosts={showCosts} onChange={setShowCosts} />
+                  </div>
                 </div>
 
                 {/* Filter bar */}
