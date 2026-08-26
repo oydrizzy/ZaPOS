@@ -139,6 +139,7 @@ function ConfirmDialog({
   icon = 'warning',
   iconBg = '#fff1f2',
   iconColor = 'var(--danger)',
+  iconBorder = '#fecdd3',
   title,
   body,
   children,
@@ -167,7 +168,7 @@ function ConfirmDialog({
   return (
     <div className="modal-backdrop" onClick={() => !isLoading && onCancel?.()}>
       <div className="confirm-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-icon-wrap" style={{ background: iconBg }}>
+        <div className="modal-icon-wrap" style={{ background: iconBg, borderColor: iconBorder }}>
           <span className="material-symbols-outlined modal-icon" style={{ color: iconColor }}>
             {icon}
           </span>
@@ -316,9 +317,10 @@ function CustomerPicker({ open, customers, selectedName, onSelect, onClose }) {
   const [search, setSearch] = useState('')
   const [showNewForm, setShowNewForm] = useState(false)
   const [newName, setNewName] = useState('')
+  const [page, setPage] = useState(1)
 
   useEffect(() => {
-    if (!open) { setSearch(''); setShowNewForm(false); setNewName('') }
+    if (!open) { setSearch(''); setShowNewForm(false); setNewName(''); setPage(1) }
   }, [open])
 
   useEffect(() => {
@@ -332,11 +334,16 @@ function CustomerPicker({ open, customers, selectedName, onSelect, onClose }) {
     }
   }, [open, onClose])
 
+  useEffect(() => {
+    setPage(1)
+  }, [search])
+
   if (!open) return null
 
   const filtered = customers.filter((c) =>
     normalizeText(c.name).includes(normalizeText(search))
   )
+  const pagination = paginate(filtered, page, 5)
 
   const handleNewCustomer = (e) => {
     e.preventDefault()
@@ -351,88 +358,19 @@ function CustomerPicker({ open, customers, selectedName, onSelect, onClose }) {
       <div className="customer-picker-modal" onClick={(e) => e.stopPropagation()}>
         <div className="customer-picker-header">
           <div className="customer-picker-title">
-            <span className="material-symbols-outlined">person_search</span>
-            <span>Seleccionar cliente</span>
+            <span className="material-symbols-outlined">{showNewForm ? 'person_add' : 'person_search'}</span>
+            <span>{showNewForm ? 'Nuevo cliente' : 'Seleccionar cliente'}</span>
           </div>
           <button className="customer-picker-close" type="button" onClick={onClose} aria-label="Cerrar">
             <span className="material-symbols-outlined">close</span>
           </button>
         </div>
 
-        <div className="customer-picker-search">
-          <label className="smart-search">
-            <span className="material-symbols-outlined">search</span>
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar cliente..."
-              type="search"
-              autoFocus
-            />
-            {search && (
-              <button type="button" onClick={() => setSearch('')}>
-                <span className="material-symbols-outlined">close</span>
-              </button>
-            )}
-          </label>
-        </div>
-
-        <div className="customer-picker-list">
-          {filtered.length === 0 && search && (
-            <div className="customer-picker-empty">
-              <span className="material-symbols-outlined">search_off</span>
-              No encontramos clientes con ese nombre.
-            </div>
-          )}
-          {filtered.length === 0 && !search && customers.length === 0 && (
-            <div className="customer-picker-empty">
-              <span className="material-symbols-outlined">group</span>
-              Todavía no hay clientes registrados.
-            </div>
-          )}
-          {filtered.map((customer) => {
-            const isSelected = selectedName === customer.name
-            const hasPending = customer.totalPending > 0
-            return (
-              <button
-                key={customer.name}
-                type="button"
-                className={`customer-picker-item ${isSelected ? 'selected' : ''}`}
-                onClick={() => { onSelect(customer.name); onClose() }}
-              >
-                <div className="customer-picker-avatar">
-                  <span className="material-symbols-outlined">
-                    {hasPending ? 'person_alert' : 'verified_user'}
-                  </span>
-                </div>
-                <div className="customer-picker-info">
-                  <span className="customer-picker-name">{customer.name}</span>
-                  <span className="customer-picker-meta">
-                    {customer.debts.length} cuenta{customer.debts.length !== 1 ? 's' : ''}
-                  </span>
-                </div>
-                {hasPending ? (
-                  <span className="customer-picker-debt">
-                    Debe {money(customer.totalPending)}
-                  </span>
-                ) : (
-                  <span className="customer-picker-debt paid">Al día</span>
-                )}
-                {isSelected && (
-                  <span className="customer-picker-check">
-                    <span className="material-symbols-outlined">check</span>
-                  </span>
-                )}
-              </button>
-            )
-          })}
-        </div>
-
         {showNewForm ? (
-          <form className="customer-picker-new-form" onSubmit={handleNewCustomer}>
+          <form className="customer-picker-new-form" onSubmit={handleNewCustomer} style={{ marginTop: '10px' }}>
             <label htmlFor="new-customer-name">Nombre del nuevo cliente</label>
             <div className="input-with-icon">
-              <span className="material-symbols-outlined">person_add</span>
+              <span className="material-symbols-outlined">person</span>
               <input
                 id="new-customer-name"
                 className="form-input"
@@ -443,7 +381,7 @@ function CustomerPicker({ open, customers, selectedName, onSelect, onClose }) {
                 required
               />
             </div>
-            <div className="confirm-actions">
+            <div className="confirm-actions" style={{ marginTop: '20px' }}>
               <button type="button" className="ghost-btn" onClick={() => setShowNewForm(false)}>
                 Cancelar
               </button>
@@ -454,16 +392,98 @@ function CustomerPicker({ open, customers, selectedName, onSelect, onClose }) {
             </div>
           </form>
         ) : (
-          <div className="customer-picker-footer">
-            <button
-              type="button"
-              className="customer-picker-new"
-              onClick={() => setShowNewForm(true)}
-            >
-              <span className="material-symbols-outlined">add_circle</span>
-              + Nuevo cliente
-            </button>
-          </div>
+          <>
+            <div className="customer-picker-search">
+              <label className="smart-search">
+                <span className="material-symbols-outlined">search</span>
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Buscar cliente..."
+                  type="search"
+                // Removed autoFocus to prevent mobile keyboard from opening automatically
+                />
+                {search && (
+                  <button type="button" onClick={() => setSearch('')}>
+                    <span className="material-symbols-outlined">close</span>
+                  </button>
+                )}
+              </label>
+            </div>
+
+            <div className="customer-picker-list">
+              {filtered.length === 0 && search && (
+                <div className="customer-picker-empty">
+                  <span className="material-symbols-outlined">search_off</span>
+                  No encontramos clientes con ese nombre.
+                </div>
+              )}
+              {filtered.length === 0 && !search && customers.length === 0 && (
+                <div className="customer-picker-empty">
+                  <span className="material-symbols-outlined">group</span>
+                  Todavía no hay clientes registrados.
+                </div>
+              )}
+              {pagination.items.map((customer) => {
+                const isSelected = selectedName === customer.name
+                const hasPending = customer.totalPending > 0
+                return (
+                  <button
+                    key={customer.name}
+                    type="button"
+                    className={`customer-picker-item ${isSelected ? 'selected' : ''}`}
+                    onClick={() => { onSelect(customer.name); onClose() }}
+                  >
+                    <div className="customer-picker-avatar">
+                      <span className="material-symbols-outlined">
+                        {hasPending ? 'person_alert' : 'verified_user'}
+                      </span>
+                    </div>
+                    <div className="customer-picker-info">
+                      <span className="customer-picker-name text-ellipsis">{customer.name}</span>
+                      <span className="customer-picker-meta">
+                        {customer.debts.length} cuenta{customer.debts.length !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                    {hasPending ? (
+                      <span className="customer-picker-debt">
+                        Debe {money(customer.totalPending)}
+                      </span>
+                    ) : (
+                      <span className="customer-picker-debt paid">Al día</span>
+                    )}
+                    {isSelected && (
+                      <span className="customer-picker-check">
+                        <span className="material-symbols-outlined">check</span>
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+
+            {pagination.totalPages > 1 && (
+              <Pagination
+                page={pagination.page}
+                totalPages={pagination.totalPages}
+                start={pagination.start}
+                end={pagination.end}
+                total={filtered.length}
+                onPageChange={setPage}
+              />
+            )}
+
+            <div className="customer-picker-footer">
+              <button
+                type="button"
+                className="customer-picker-new"
+                onClick={() => setShowNewForm(true)}
+              >
+                <span className="material-symbols-outlined">add_circle</span>
+                + Nuevo cliente
+              </button>
+            </div>
+          </>
         )}
       </div>
     </div>
@@ -799,7 +819,7 @@ function CashModule({ transactions, summary, movementForm, setMovementForm, addC
       .filter((entry) => {
         // Date filter
         if (!isDateInRange(entry.date, cashFilters.date, cashFilters.dateFrom, cashFilters.dateTo)) return false
-        
+
         // Type filter
         if (cashFilters.type !== 'all' && entry.type !== cashFilters.type) return false
 
@@ -944,8 +964,8 @@ function CashModule({ transactions, summary, movementForm, setMovementForm, addC
           placeholder="Buscar..."
           count={`${recentTransactions.length} mov`}
         >
-          <button 
-            type="button" 
+          <button
+            type="button"
             className={`filter-btn ${activeFiltersList.length > 0 ? 'active' : ''}`}
             onClick={() => { setTempFilters(cashFilters); setIsFilterSheetOpen(true); }}
           >
@@ -954,8 +974,8 @@ function CashModule({ transactions, summary, movementForm, setMovementForm, addC
           </button>
         </SmartSearch>
 
-        <ActiveFilterChips 
-          filters={activeFiltersList} 
+        <ActiveFilterChips
+          filters={activeFiltersList}
           onRemove={(key) => setCashFilters(prev => ({ ...prev, [key]: 'all' }))}
           onClearAll={() => setCashFilters({ sort: 'recent', date: 'all', type: 'all', dateFrom: '', dateTo: '' })}
         />
@@ -1005,6 +1025,7 @@ function CashModule({ transactions, summary, movementForm, setMovementForm, addC
         icon="undo"
         iconBg="#ecfdf3"
         iconColor="var(--success)"
+        iconBorder="#a7f3d0"
         title="Revertir movimiento"
         onCancel={closeRevertModal}
         onConfirm={confirmRevert}
@@ -1022,7 +1043,7 @@ function CashModule({ transactions, summary, movementForm, setMovementForm, addC
         )}
       </ConfirmDialog>
 
-      <FilterSheet 
+      <FilterSheet
         isOpen={isFilterSheetOpen}
         onClose={() => setIsFilterSheetOpen(false)}
         title="Filtros de Caja"
@@ -1037,8 +1058,8 @@ function CashModule({ transactions, summary, movementForm, setMovementForm, addC
         <div className="filter-sheet-section">
           <h4>Orden</h4>
           <div className="filter-chips-row">
-            {[{v: 'recent', l: 'Más recientes'}, {v: 'oldest', l: 'Más antiguos'}, {v: 'highest', l: 'Mayor monto'}, {v: 'lowest', l: 'Menor monto'}].map(o => (
-              <button key={o.v} className={`filter-chip ${tempFilters.sort === o.v ? 'active' : ''}`} onClick={() => setTempFilters({...tempFilters, sort: o.v})}>{o.l}</button>
+            {[{ v: 'recent', l: 'Más recientes' }, { v: 'oldest', l: 'Más antiguos' }, { v: 'highest', l: 'Mayor monto' }, { v: 'lowest', l: 'Menor monto' }].map(o => (
+              <button key={o.v} className={`filter-chip ${tempFilters.sort === o.v ? 'active' : ''}`} onClick={() => setTempFilters({ ...tempFilters, sort: o.v })}>{o.l}</button>
             ))}
           </div>
         </div>
@@ -1046,19 +1067,19 @@ function CashModule({ transactions, summary, movementForm, setMovementForm, addC
         <div className="filter-sheet-section">
           <h4>Fecha</h4>
           <div className="filter-chips-row">
-            {[{v: 'all', l: 'Todo'}, {v: 'today', l: 'Hoy'}, {v: 'yesterday', l: 'Ayer'}, {v: '7days', l: 'Últimos 7 días'}, {v: '30days', l: 'Últimos 30 días'}, {v: 'thisMonth', l: 'Este mes'}, {v: 'lastMonth', l: 'Mes anterior'}, {v: 'custom', l: 'Rango personalizado'}].map(o => (
-              <button key={o.v} className={`filter-chip ${tempFilters.date === o.v ? 'active' : ''}`} onClick={() => setTempFilters({...tempFilters, date: o.v})}>{o.l}</button>
+            {[{ v: 'all', l: 'Todo' }, { v: 'today', l: 'Hoy' }, { v: 'yesterday', l: 'Ayer' }, { v: '7days', l: 'Últimos 7 días' }, { v: '30days', l: 'Últimos 30 días' }, { v: 'thisMonth', l: 'Este mes' }, { v: 'lastMonth', l: 'Mes anterior' }, { v: 'custom', l: 'Rango personalizado' }].map(o => (
+              <button key={o.v} className={`filter-chip ${tempFilters.date === o.v ? 'active' : ''}`} onClick={() => setTempFilters({ ...tempFilters, date: o.v })}>{o.l}</button>
             ))}
           </div>
           {tempFilters.date === 'custom' && (
             <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
               <label className="form-group" style={{ flex: 1 }}>
                 <span>Desde</span>
-                <input type="date" className="form-input" value={tempFilters.dateFrom} onChange={e => setTempFilters({...tempFilters, dateFrom: e.target.value})} style={{ padding: '8px' }} />
+                <input type="date" className="form-input" value={tempFilters.dateFrom} onChange={e => setTempFilters({ ...tempFilters, dateFrom: e.target.value })} style={{ padding: '8px' }} />
               </label>
               <label className="form-group" style={{ flex: 1 }}>
                 <span>Hasta</span>
-                <input type="date" className="form-input" value={tempFilters.dateTo} onChange={e => setTempFilters({...tempFilters, dateTo: e.target.value})} style={{ padding: '8px' }} />
+                <input type="date" className="form-input" value={tempFilters.dateTo} onChange={e => setTempFilters({ ...tempFilters, dateTo: e.target.value })} style={{ padding: '8px' }} />
               </label>
             </div>
           )}
@@ -1067,8 +1088,8 @@ function CashModule({ transactions, summary, movementForm, setMovementForm, addC
         <div className="filter-sheet-section">
           <h4>Tipo de Movimiento</h4>
           <div className="filter-chips-row">
-            {[{v: 'all', l: 'Todos'}, {v: 'income', l: 'Ingresos'}, {v: 'expense', l: 'Egresos'}, {v: 'sale', l: 'Ventas'}, {v: 'debt_sale', l: 'Ventas fiadas'}, {v: 'debt_payment', l: 'Abonos'}].map(o => (
-              <button key={o.v} className={`filter-chip ${tempFilters.type === o.v ? 'active' : ''}`} onClick={() => setTempFilters({...tempFilters, type: o.v})}>{o.l}</button>
+            {[{ v: 'all', l: 'Todos' }, { v: 'income', l: 'Ingresos' }, { v: 'expense', l: 'Egresos' }, { v: 'sale', l: 'Ventas' }, { v: 'debt_sale', l: 'Ventas fiadas' }, { v: 'debt_payment', l: 'Abonos' }].map(o => (
+              <button key={o.v} className={`filter-chip ${tempFilters.type === o.v ? 'active' : ''}`} onClick={() => setTempFilters({ ...tempFilters, type: o.v })}>{o.l}</button>
             ))}
           </div>
         </div>
@@ -1102,7 +1123,7 @@ function EstimatesModule({ products, cashSummary }) {
     const gramOk = estimateGramFilter === 'Todos' || row.size === estimateGramFilter
     const typeOk = estimateTypeFilter === 'Todos' || (row.type || 'Hybrida') === estimateTypeFilter
     return gramOk && typeOk && productMatches(row, estimateSearch)
-  })
+  }).sort((a, b) => b.id - a.id)
 
   const totals = rows.reduce(
     (acc, row) => ({
@@ -1345,7 +1366,7 @@ function DebtsModule({ debts, customers, addDebtPayment, paymentSavingId }) {
       return { ...c, debts: filteredDebts }
     }).filter(customer => {
       if (customer.debts.length === 0) return false
-      
+
       if (!needle) return true
       const debtsText = customer.debts
         .map((debt) => `${debt.status} ${debt.totalAmount} ${debt.paidAmount} ${debt.remainingAmount} ${(debt.items || []).map(productTitle).join(' ')}`)
@@ -1356,7 +1377,7 @@ function DebtsModule({ debts, customers, addDebtPayment, paymentSavingId }) {
       const maxDebtB = Math.max(...b.debts.map(d => d.remainingAmount)) || 0
       const totalPurchasedA = a.debts.reduce((sum, d) => sum + Number(d.totalAmount), 0)
       const totalPurchasedB = b.debts.reduce((sum, d) => sum + Number(d.totalAmount), 0)
-      
+
       if (debtFilters.sort === 'recent') return new Date(b.debts[0]?.date) - new Date(a.debts[0]?.date)
       if (debtFilters.sort === 'oldest') return new Date(a.debts[0]?.date) - new Date(b.debts[0]?.date)
       if (debtFilters.sort === 'highest') return maxDebtB - maxDebtA
@@ -1366,7 +1387,7 @@ function DebtsModule({ debts, customers, addDebtPayment, paymentSavingId }) {
       return 0
     })
   }, [customers, debouncedDebtSearch, debtFilters])
-  
+
   const debtPagination = paginate(filteredCustomers, debtPage, 4)
 
   useEffect(() => {
@@ -1461,8 +1482,8 @@ function DebtsModule({ debts, customers, addDebtPayment, paymentSavingId }) {
           placeholder="Buscar cliente, producto o monto"
           count={`${filteredCustomers.length} clientes`}
         >
-          <button 
-            type="button" 
+          <button
+            type="button"
             className={`filter-btn ${activeDebtFiltersList.length > 0 ? 'active' : ''}`}
             onClick={() => { setTempDebtFilters(debtFilters); setIsDebtFilterSheetOpen(true); }}
           >
@@ -1471,8 +1492,8 @@ function DebtsModule({ debts, customers, addDebtPayment, paymentSavingId }) {
           </button>
         </SmartSearch>
 
-        <ActiveFilterChips 
-          filters={activeDebtFiltersList} 
+        <ActiveFilterChips
+          filters={activeDebtFiltersList}
           onRemove={(key) => setDebtFilters(prev => ({ ...prev, [key]: 'all' }))}
           onClearAll={() => setDebtFilters({ sort: 'recent', date: 'all', status: 'all', dateFrom: '', dateTo: '' })}
         />
@@ -1674,7 +1695,7 @@ function DebtsModule({ debts, customers, addDebtPayment, paymentSavingId }) {
         isSaving={isSavingPayment}
       />
 
-      <FilterSheet 
+      <FilterSheet
         isOpen={isDebtFilterSheetOpen}
         onClose={() => setIsDebtFilterSheetOpen(false)}
         title="Filtros de Deudas"
@@ -1689,8 +1710,8 @@ function DebtsModule({ debts, customers, addDebtPayment, paymentSavingId }) {
         <div className="filter-sheet-section">
           <h4>Estado</h4>
           <div className="filter-chips-row">
-            {[{v: 'all', l: 'Todas'}, {v: 'pending', l: 'Pendientes'}, {v: 'partial', l: 'Parciales'}, {v: 'paid', l: 'Pagadas'}].map(o => (
-              <button key={o.v} className={`filter-chip ${tempDebtFilters.status === o.v ? 'active' : ''}`} onClick={() => setTempDebtFilters({...tempDebtFilters, status: o.v})}>{o.l}</button>
+            {[{ v: 'all', l: 'Todas' }, { v: 'pending', l: 'Pendientes' }, { v: 'partial', l: 'Parciales' }, { v: 'paid', l: 'Pagadas' }].map(o => (
+              <button key={o.v} className={`filter-chip ${tempDebtFilters.status === o.v ? 'active' : ''}`} onClick={() => setTempDebtFilters({ ...tempDebtFilters, status: o.v })}>{o.l}</button>
             ))}
           </div>
         </div>
@@ -1698,8 +1719,8 @@ function DebtsModule({ debts, customers, addDebtPayment, paymentSavingId }) {
         <div className="filter-sheet-section">
           <h4>Orden</h4>
           <div className="filter-chips-row">
-            {[{v: 'recent', l: 'Más recientes'}, {v: 'oldest', l: 'Más antiguas'}, {v: 'highest', l: 'Mayor deuda'}, {v: 'lowest', l: 'Menor deuda'}, {v: 'highest_total', l: 'Mayor compra'}, {v: 'lowest_total', l: 'Menor compra'}].map(o => (
-              <button key={o.v} className={`filter-chip ${tempDebtFilters.sort === o.v ? 'active' : ''}`} onClick={() => setTempDebtFilters({...tempDebtFilters, sort: o.v})}>{o.l}</button>
+            {[{ v: 'recent', l: 'Más recientes' }, { v: 'oldest', l: 'Más antiguas' }, { v: 'highest', l: 'Mayor deuda' }, { v: 'lowest', l: 'Menor deuda' }, { v: 'highest_total', l: 'Mayor compra' }, { v: 'lowest_total', l: 'Menor compra' }].map(o => (
+              <button key={o.v} className={`filter-chip ${tempDebtFilters.sort === o.v ? 'active' : ''}`} onClick={() => setTempDebtFilters({ ...tempDebtFilters, sort: o.v })}>{o.l}</button>
             ))}
           </div>
         </div>
@@ -1707,19 +1728,19 @@ function DebtsModule({ debts, customers, addDebtPayment, paymentSavingId }) {
         <div className="filter-sheet-section">
           <h4>Fecha</h4>
           <div className="filter-chips-row">
-            {[{v: 'all', l: 'Todo'}, {v: 'today', l: 'Hoy'}, {v: '7days', l: 'Últimos 7 días'}, {v: '30days', l: 'Últimos 30 días'}, {v: 'thisMonth', l: 'Este mes'}, {v: 'lastMonth', l: 'Mes anterior'}, {v: 'custom', l: 'Rango personalizado'}].map(o => (
-              <button key={o.v} className={`filter-chip ${tempDebtFilters.date === o.v ? 'active' : ''}`} onClick={() => setTempDebtFilters({...tempDebtFilters, date: o.v})}>{o.l}</button>
+            {[{ v: 'all', l: 'Todo' }, { v: 'today', l: 'Hoy' }, { v: '7days', l: 'Últimos 7 días' }, { v: '30days', l: 'Últimos 30 días' }, { v: 'thisMonth', l: 'Este mes' }, { v: 'lastMonth', l: 'Mes anterior' }, { v: 'custom', l: 'Rango personalizado' }].map(o => (
+              <button key={o.v} className={`filter-chip ${tempDebtFilters.date === o.v ? 'active' : ''}`} onClick={() => setTempDebtFilters({ ...tempDebtFilters, date: o.v })}>{o.l}</button>
             ))}
           </div>
           {tempDebtFilters.date === 'custom' && (
             <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
               <label className="form-group" style={{ flex: 1 }}>
                 <span>Desde</span>
-                <input type="date" className="form-input" value={tempDebtFilters.dateFrom} onChange={e => setTempDebtFilters({...tempDebtFilters, dateFrom: e.target.value})} style={{ padding: '8px' }} />
+                <input type="date" className="form-input" value={tempDebtFilters.dateFrom} onChange={e => setTempDebtFilters({ ...tempDebtFilters, dateFrom: e.target.value })} style={{ padding: '8px' }} />
               </label>
               <label className="form-group" style={{ flex: 1 }}>
                 <span>Hasta</span>
-                <input type="date" className="form-input" value={tempDebtFilters.dateTo} onChange={e => setTempDebtFilters({...tempDebtFilters, dateTo: e.target.value})} style={{ padding: '8px' }} />
+                <input type="date" className="form-input" value={tempDebtFilters.dateTo} onChange={e => setTempDebtFilters({ ...tempDebtFilters, dateTo: e.target.value })} style={{ padding: '8px' }} />
               </label>
             </div>
           )}
@@ -1804,7 +1825,7 @@ function App() {
         const gramOk = salesGramFilter === 'Todos' || product.size === salesGramFilter
         const typeOk = salesTypeFilter === 'Todos' || (product.type || 'Hybrida') === salesTypeFilter
         return gramOk && typeOk && productMatches(product, salesSearch)
-      }),
+      }).sort((a, b) => b.id - a.id),
     [products, salesGramFilter, salesTypeFilter, salesSearch]
   )
 
@@ -1814,7 +1835,7 @@ function App() {
         const gramOk = inventoryGramFilter === 'Todos' || product.size === inventoryGramFilter
         const typeOk = inventoryTypeFilter === 'Todos' || (product.type || 'Hybrida') === inventoryTypeFilter
         return gramOk && typeOk && productMatches(product, inventorySearch)
-      }),
+      }).sort((a, b) => b.id - a.id),
     [products, inventoryGramFilter, inventoryTypeFilter, inventorySearch]
   )
   const salesPagination = useMemo(
@@ -2361,7 +2382,7 @@ function App() {
                 <div className="stat-card">
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
                     <span className="material-symbols-outlined" style={{ color: 'var(--accent)', background: 'var(--accent-soft)', padding: '5px', borderRadius: '8px', fontSize: '1.1rem' }}>shopping_bag</span>
-                    <span className="stat-label" style={{ margin: 0 }}>Productos en venta</span>
+                    <span className="stat-label" style={{ margin: 0 }}>Productos en el carrito</span>
                   </div>
                   <span className="stat-value">{cart.length}</span>
                 </div>
