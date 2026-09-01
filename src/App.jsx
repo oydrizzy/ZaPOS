@@ -448,7 +448,7 @@ function CustomerPicker({ open, customers, selectedName, onSelect, onClose }) {
                 className="form-input"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
-                placeholder="Ej. Danielito"
+                placeholder="Ej. Daniel"
                 autoFocus
                 required
               />
@@ -989,7 +989,7 @@ function NoteFormModal({ open, note, relationOptions, onClose, onSubmit, isSavin
                 value={form.title}
                 onChange={(e) => setForm((current) => ({ ...current, title: e.target.value }))}
                 maxLength={150}
-                placeholder="Ej. Cobrar a Richardson"
+                placeholder="Ej. Cobrar a Daniel"
                 required
               />
             </div>
@@ -1222,9 +1222,9 @@ function NotesModule({
           </div>
         </div>
         <div className="inventory-actions">
-            <button type="button" className="inv-action-btn edit" onClick={() => setActionNote(note)} title="Acciones" aria-label="Acciones">
-              <span className="material-symbols-outlined">more_vert</span>
-            </button>
+          <button type="button" className="inv-action-btn edit" onClick={() => setActionNote(note)} title="Acciones" aria-label="Acciones">
+            <span className="material-symbols-outlined">more_vert</span>
+          </button>
         </div>
       </li>
     )
