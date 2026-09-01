@@ -1003,7 +1003,7 @@ function NoteFormModal({ open, note, relationOptions, onClose, onSubmit, isSavin
               value={form.description}
               onChange={(e) => setForm((current) => ({ ...current, description: e.target.value }))}
               placeholder="Detalles de la nota"
-              rows={4}
+              rows={12}
             />
           </div>
 
@@ -1063,7 +1063,7 @@ function NoteFormModal({ open, note, relationOptions, onClose, onSubmit, isSavin
         </div>
 
         <div className="note-modal-footer">
-          <button type="button" className="ghost-btn" onClick={onClose} disabled={isSaving}>Cancelar</button>
+          <button type="button" className="ghost-btn" onClick={onClose} disabled={isSaving}>Cerrar</button>
           <button type="submit" className="primary-btn" disabled={isSaving || !form.title.trim()}>
             <span className="material-symbols-outlined">{isSaving ? 'hourglass_empty' : 'save'}</span>
             {isSaving ? 'Guardando...' : 'Guardar nota'}
@@ -1196,7 +1196,7 @@ function NotesModule({
           <button type="button" className="inv-action-btn edit" onClick={() => onTogglePinned(note)} aria-label={note.pinned ? 'Desfijar nota' : 'Fijar nota'} title={note.pinned ? 'Desfijar' : 'Fijar'}>
             <span className="material-symbols-outlined" style={note.pinned ? { fontVariationSettings: "'FILL' 1" } : undefined}>push_pin</span>
           </button>
-          <div className="inventory-info">
+          <div className="inventory-info" onClick={() => onEdit(note)} style={{ cursor: 'pointer' }}>
             <div className="inventory-title-row">
               <strong>{note.title}</strong>
               <span className="badge">{notePriorityLabels[note.priority]}</span>
