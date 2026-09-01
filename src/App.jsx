@@ -967,23 +967,25 @@ function NoteFormModal({ open, note, relationOptions, onClose, onSubmit, isSavin
 
   return (
     <div className="modal-backdrop" onClick={() => !isSaving && onClose()}>
-      <div className="note-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="note-modal-header">
-          <div>
+      <div className="customer-picker-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="customer-picker-header">
+          <div className="customer-picker-title">
+            <span className="material-symbols-outlined">sticky_note_2</span>
             <span>{note ? 'Editar nota' : 'Nueva nota'}</span>
-            <strong>{note ? 'Actualiza los detalles' : 'Guarda algo importante'}</strong>
           </div>
-          <button type="button" className="note-icon-btn" onClick={onClose} disabled={isSaving} aria-label="Cerrar">
+          <button type="button" className="customer-picker-close" onClick={onClose} disabled={isSaving} aria-label="Cerrar">
             <span className="material-symbols-outlined">close</span>
           </button>
         </div>
 
-        <form className="note-form" onSubmit={handleSubmit}>
-          <label className="form-group">
-            <span>Titulo</span>
+        <div className="customer-picker-list">
+        <form className="inventory-form" onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="note-title">Titulo</label>
             <div className="input-with-icon">
               <span className="material-symbols-outlined">sticky_note_2</span>
               <input
+                id="note-title"
                 className="form-input"
                 value={form.title}
                 onChange={(e) => setForm((current) => ({ ...current, title: e.target.value }))}
@@ -992,51 +994,52 @@ function NoteFormModal({ open, note, relationOptions, onClose, onSubmit, isSavin
                 required
               />
             </div>
-          </label>
+          </div>
 
-          <label className="form-group">
-            <span>Descripcion</span>
+          <div className="form-group">
+            <label htmlFor="note-description">Descripcion</label>
             <textarea
-              className="note-textarea"
+              id="note-description"
+              className="form-input"
               value={form.description}
               onChange={(e) => setForm((current) => ({ ...current, description: e.target.value }))}
               placeholder="Detalles de la nota"
               rows={4}
             />
-          </label>
+          </div>
 
-          <div className="note-form-grid">
-            <label className="form-group">
-              <span>Prioridad</span>
-              <select className="form-select" value={form.priority} onChange={(e) => setForm((current) => ({ ...current, priority: e.target.value }))}>
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="note-priority">Prioridad</label>
+              <select id="note-priority" className="form-select" value={form.priority} onChange={(e) => setForm((current) => ({ ...current, priority: e.target.value }))}>
                 <option value="normal">Normal</option>
                 <option value="importante">Importante</option>
                 <option value="urgente">Urgente</option>
               </select>
-            </label>
+            </div>
 
-            <label className="form-group">
-              <span>Estado</span>
-              <select className="form-select" value={form.status} onChange={(e) => setForm((current) => ({ ...current, status: e.target.value }))}>
+            <div className="form-group">
+              <label htmlFor="note-status">Estado</label>
+              <select id="note-status" className="form-select" value={form.status} onChange={(e) => setForm((current) => ({ ...current, status: e.target.value }))}>
                 <option value="pendiente">Pendiente</option>
                 <option value="completada">Completada</option>
               </select>
-            </label>
+            </div>
 
-            <label className="form-group">
-              <span>Fecha</span>
-              <input className="form-input" type="date" value={form.date} onChange={(e) => setForm((current) => ({ ...current, date: e.target.value }))} />
-            </label>
+            <div className="form-group">
+              <label htmlFor="note-date">Fecha</label>
+              <input id="note-date" className="form-input" type="date" value={form.date} onChange={(e) => setForm((current) => ({ ...current, date: e.target.value }))} />
+            </div>
 
-            <label className="form-group">
-              <span>Hora</span>
-              <input className="form-input" type="time" value={form.time} onChange={(e) => setForm((current) => ({ ...current, time: e.target.value }))} disabled={!form.date} />
-            </label>
+            <div className="form-group">
+              <label htmlFor="note-time">Hora</label>
+              <input id="note-time" className="form-input" type="time" value={form.time} onChange={(e) => setForm((current) => ({ ...current, time: e.target.value }))} disabled={!form.date} />
+            </div>
           </div>
 
-          <label className="form-group">
-            <span>Relacionar con</span>
-            <select className="form-select" value={form.relationKey} onChange={(e) => setForm((current) => ({ ...current, relationKey: e.target.value }))}>
+          <div className="form-group">
+            <label htmlFor="note-relation">Relacionar con</label>
+            <select id="note-relation" className="form-select" value={form.relationKey} onChange={(e) => setForm((current) => ({ ...current, relationKey: e.target.value }))}>
               <option value="">Ninguno</option>
               {relationOptions.map((option) => (
                 <option key={`${option.type}:${option.id}`} value={`${option.type}:${option.id}`}>
@@ -1044,9 +1047,9 @@ function NoteFormModal({ open, note, relationOptions, onClose, onSubmit, isSavin
                 </option>
               ))}
             </select>
-          </label>
+          </div>
 
-          <label className="note-check">
+          <label className="customer-picker-item">
             <input type="checkbox" checked={form.pinned} onChange={(e) => setForm((current) => ({ ...current, pinned: e.target.checked }))} />
             <span>Fijada</span>
           </label>
@@ -1061,6 +1064,63 @@ function NoteFormModal({ open, note, relationOptions, onClose, onSubmit, isSavin
             </button>
           </div>
         </form>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function NoteActionsModal({ note, onClose, onEdit, onDelete, onOpenRelation, onTogglePinned, onToggleStatus, isSaving }) {
+  useEffect(() => {
+    if (!note) return undefined
+    const onKey = (event) => { if (event.key === 'Escape') onClose() }
+    document.addEventListener('keydown', onKey)
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.body.style.overflow = previousOverflow
+    }
+  }, [note, onClose])
+
+  if (!note) return null
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="customer-picker-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="customer-picker-header">
+          <div className="customer-picker-title">
+            <span className="material-symbols-outlined">sticky_note_2</span>
+            <span>Acciones de nota</span>
+          </div>
+          <button type="button" className="customer-picker-close" onClick={onClose} aria-label="Cerrar">
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <div className="customer-picker-list">
+          <button type="button" className="customer-picker-item" disabled={isSaving} onClick={() => { onTogglePinned(note); onClose() }}>
+            <span className="material-symbols-outlined">push_pin</span>
+            <span>{note.pinned ? 'Desfijar' : 'Fijar'}</span>
+          </button>
+          <button type="button" className="customer-picker-item" disabled={isSaving} onClick={() => { onToggleStatus(note); onClose() }}>
+            <span className="material-symbols-outlined">{note.status === 'completada' ? 'undo' : 'check_circle'}</span>
+            <span>{note.status === 'completada' ? 'Volver a pendiente' : 'Completar'}</span>
+          </button>
+          <button type="button" className="customer-picker-item" onClick={() => { onEdit(note); onClose() }}>
+            <span className="material-symbols-outlined">edit_square</span>
+            <span>Editar</span>
+          </button>
+          {note.relationType && (
+            <button type="button" className="customer-picker-item" onClick={() => { onOpenRelation(note); onClose() }}>
+              <span className="material-symbols-outlined">open_in_new</span>
+              <span>Ver relacion</span>
+            </button>
+          )}
+          <button type="button" className="customer-picker-item ghost-small danger" onClick={() => { onDelete(note); onClose() }}>
+            <span className="material-symbols-outlined">delete_forever</span>
+            <span>Eliminar</span>
+          </button>
+        </div>
       </div>
     </div>
   )
@@ -1081,6 +1141,7 @@ function NotesModule({
 }) {
   const [search, setSearch] = useState('')
   const [filtersOpen, setFiltersOpen] = useState(false)
+  const [actionNote, setActionNote] = useState(null)
   const [filters, setFilters] = useState({ status: 'all', priority: 'all', date: 'all', sort: 'recent' })
   const debouncedSearch = useDebounce(search, 250)
   const relationOptions = useMemo(() => getNoteRelationOptions({ products, debts, transactions }), [products, debts, transactions])
@@ -1126,46 +1187,35 @@ function NotesModule({
   const renderNote = (note) => {
     const relationLabel = getNoteRelationLabel(note, relationOptions)
     return (
-      <li key={note.id} className={`note-card ${note.status === 'completada' ? 'completed' : ''}`}>
-        <div className="note-card-main">
-          <button type="button" className={`note-pin ${note.pinned ? 'active' : ''}`} onClick={() => onTogglePinned(note)} aria-label={note.pinned ? 'Desfijar nota' : 'Fijar nota'}>
-            <span className="material-symbols-outlined">push_pin</span>
+      <li key={note.id} className="inventory-card">
+        <div className="inventory-row">
+          <button type="button" className="inv-action-btn edit" onClick={() => onTogglePinned(note)} aria-label={note.pinned ? 'Desfijar nota' : 'Fijar nota'} title={note.pinned ? 'Desfijar' : 'Fijar'}>
+            <span className="material-symbols-outlined" style={note.pinned ? { fontVariationSettings: "'FILL' 1" } : undefined}>push_pin</span>
           </button>
-          <div className="note-card-copy">
-            <strong>{note.title}</strong>
-            {note.description && <p>{note.description}</p>}
-            <span className="note-date">{formatNoteDate(note.noteDate)}</span>
-            {relationLabel && <span className="note-relation">{relationLabel}</span>}
+          <div className="inventory-info">
+            <div className="inventory-title-row">
+              <strong>{note.title}</strong>
+              <span className="badge">{notePriorityLabels[note.priority]}</span>
+              <span className={`status-badge ${note.status === 'completada' ? 'status-paid' : 'status-pending'}`}>{noteStatusLabels[note.status]}</span>
+            </div>
+            <div className="inventory-details">
+              {note.description && <span className="text-clamp-2">{note.description}</span>}
+              <span>{formatNoteDate(note.noteDate)}</span>
+              {relationLabel && <span className="badge">{relationLabel}</span>}
+            </div>
           </div>
         </div>
-        <div className="note-card-footer">
-          <div className="note-badges">
-            <span className={`note-badge priority-${note.priority}`}>{notePriorityLabels[note.priority]}</span>
-            <span className={`note-badge status-${note.status}`}>{noteStatusLabels[note.status]}</span>
-          </div>
-          <div className="note-actions">
-            <button type="button" className="note-icon-btn" onClick={() => onToggleStatus(note)} disabled={savingAction === `note-status-${note.id}`} title={note.status === 'completada' ? 'Volver a pendiente' : 'Completar'}>
-              <span className="material-symbols-outlined">{note.status === 'completada' ? 'undo' : 'check_circle'}</span>
+        <div className="inventory-actions">
+            <button type="button" className="inv-action-btn edit" onClick={() => setActionNote(note)} title="Acciones" aria-label="Acciones">
+              <span className="material-symbols-outlined">more_vert</span>
             </button>
-            <button type="button" className="note-icon-btn" onClick={() => onEdit(note)} title="Editar">
-              <span className="material-symbols-outlined">edit_square</span>
-            </button>
-            {relationLabel && (
-              <button type="button" className="note-icon-btn" onClick={() => onOpenRelation(note)} title="Ver relacion">
-                <span className="material-symbols-outlined">open_in_new</span>
-              </button>
-            )}
-            <button type="button" className="note-icon-btn danger" onClick={() => onDelete(note)} title="Eliminar">
-              <span className="material-symbols-outlined">delete_forever</span>
-            </button>
-          </div>
         </div>
       </li>
     )
   }
 
   return (
-    <div className="notes-shell">
+    <div className="inventory-shell">
       <div className="section-head">
         <div className="section-title-row">
           <span className="material-symbols-outlined">sticky_note_2</span>
@@ -1185,7 +1235,7 @@ function NotesModule({
       </SmartSearch>
 
       {filteredNotes.length === 0 ? (
-        <div className="note-empty-card">
+        <div className="inventory-card">
           <EmptyState
             icon={hasFilters ? 'search_off' : 'sticky_note_2'}
             title={hasFilters ? 'No encontramos notas' : 'No tienes notas todavia'}
@@ -1201,15 +1251,15 @@ function NotesModule({
       ) : (
         <>
           {pinnedNotes.length > 0 && (
-            <section className="notes-section">
-              <span className="notes-section-title">Fijadas</span>
-              <ul className="notes-list">{pinnedNotes.map(renderNote)}</ul>
+            <section className="inventory-shell">
+              <div className="section-title-row"><span className="section-title">Fijadas</span></div>
+              <ul className="inventory-list">{pinnedNotes.map(renderNote)}</ul>
             </section>
           )}
           {recentNotes.length > 0 && (
-            <section className="notes-section">
-              <span className="notes-section-title">Recientes</span>
-              <ul className="notes-list">{recentNotes.map(renderNote)}</ul>
+            <section className="inventory-shell">
+              <div className="section-title-row"><span className="section-title">Recientes</span></div>
+              <ul className="inventory-list">{recentNotes.map(renderNote)}</ul>
             </section>
           )}
         </>
@@ -1249,6 +1299,17 @@ function NotesModule({
           </div>
         </div>
       </FilterSheet>
+
+      <NoteActionsModal
+        note={actionNote}
+        onClose={() => setActionNote(null)}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        onOpenRelation={onOpenRelation}
+        onTogglePinned={onTogglePinned}
+        onToggleStatus={onToggleStatus}
+        isSaving={Boolean(savingAction)}
+      />
     </div>
   )
 }
@@ -2920,15 +2981,6 @@ function App() {
         </div>
 
         <button
-          className={`topbar-notes-btn ${activeTab === 'notas' ? 'active' : ''}`}
-          type="button"
-          onClick={() => setActiveTab('notas')}
-        >
-          <span className="material-symbols-outlined">sticky_note_2</span>
-          <span>Notas</span>
-        </button>
-
-        <button
           className="pushable"
           type="button"
           onClick={handleLogout}
@@ -3547,6 +3599,14 @@ function App() {
         >
           <span className="material-symbols-outlined bottom-nav-icon">calculate</span>
           <span className="bottom-nav-label">Calculos</span>
+        </button>
+
+        <button
+          className={`bottom-nav-btn ${activeTab === 'notas' ? 'active' : ''}`}
+          onClick={() => setActiveTab('notas')}
+        >
+          <span className="material-symbols-outlined bottom-nav-icon">sticky_note_2</span>
+          <span className="bottom-nav-label">Notas</span>
         </button>
       </nav>
 
