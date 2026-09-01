@@ -208,13 +208,17 @@ export function mapNoteFromDb(row = {}) {
     noteDate: row.fecha_nota || '',
     relationType: row.tipo_relacion || '',
     relationId: row.id_relacion == null ? '' : Number(row.id_relacion),
-    userId: row.usuario_id || '',
+    // user_id is the real DB column name (not usuario_id)
+    userId: row.user_id || '',
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }
 }
 
 export function mapNoteToDb(note = {}) {
+  // IMPORTANT: user_id is intentionally NOT included here.
+  // createNote() in notesService injects user_id from Supabase Auth.
+  // updateNote() deletes user_id before sending to prevent ownership changes.
   return compactDbObject({
     titulo: note.title,
     descripcion: note.description || null,
@@ -224,7 +228,6 @@ export function mapNoteToDb(note = {}) {
     fecha_nota: note.noteDate || null,
     tipo_relacion: note.relationType || null,
     id_relacion: note.relationId || null,
-    usuario_id: note.userId || null,
     updated_at: note.updatedAt,
   })
 }

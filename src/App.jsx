@@ -997,32 +997,41 @@ function NoteFormModal({ open, note, relationOptions, onClose, onSubmit, isSavin
 
           <div className="form-group">
             <label htmlFor="note-description">Descripcion</label>
-            <textarea
-              id="note-description"
-              className="form-input"
-              value={form.description}
-              onChange={(e) => setForm((current) => ({ ...current, description: e.target.value }))}
-              placeholder="Detalles de la nota"
-              rows={12}
-            />
+            <div className="input-with-icon">
+              <span className="material-symbols-outlined">notes</span>
+              <textarea
+                id="note-description"
+                className="form-input"
+                value={form.description}
+                onChange={(e) => setForm((current) => ({ ...current, description: e.target.value }))}
+                placeholder="Detalles de la nota"
+                rows={12}
+              />
+            </div>
           </div>
 
           <div className="form-row">
             <div className="form-group">
               <label htmlFor="note-priority">Prioridad</label>
-              <select id="note-priority" className="form-select" value={form.priority} onChange={(e) => setForm((current) => ({ ...current, priority: e.target.value }))}>
-                <option value="normal">Normal</option>
-                <option value="importante">Importante</option>
-                <option value="urgente">Urgente</option>
-              </select>
+              <div className="input-with-icon">
+                <span className="material-symbols-outlined">flag</span>
+                <select id="note-priority" className="form-select" value={form.priority} onChange={(e) => setForm((current) => ({ ...current, priority: e.target.value }))}>
+                  <option value="normal">Normal</option>
+                  <option value="importante">Importante</option>
+                  <option value="urgente">Urgente</option>
+                </select>
+              </div>
             </div>
 
             <div className="form-group">
               <label htmlFor="note-status">Estado</label>
-              <select id="note-status" className="form-select" value={form.status} onChange={(e) => setForm((current) => ({ ...current, status: e.target.value }))}>
-                <option value="pendiente">Pendiente</option>
-                <option value="completada">Completada</option>
-              </select>
+              <div className="input-with-icon">
+                <span className="material-symbols-outlined">published_with_changes</span>
+                <select id="note-status" className="form-select" value={form.status} onChange={(e) => setForm((current) => ({ ...current, status: e.target.value }))}>
+                  <option value="pendiente">Pendiente</option>
+                  <option value="completada">Completada</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -1046,14 +1055,17 @@ function NoteFormModal({ open, note, relationOptions, onClose, onSubmit, isSavin
 
           <div className="form-group">
             <label htmlFor="note-relation">Relacionar con</label>
-            <select id="note-relation" className="form-select" value={form.relationKey} onChange={(e) => setForm((current) => ({ ...current, relationKey: e.target.value }))}>
-              <option value="">Ninguno</option>
-              {relationOptions.map((option) => (
-                <option key={`${option.type}:${option.id}`} value={`${option.type}:${option.id}`}>
-                  {noteRelationLabels[option.type]} · {option.label}
-                </option>
-              ))}
-            </select>
+            <div className="input-with-icon">
+              <span className="material-symbols-outlined">link</span>
+              <select id="note-relation" className="form-select" value={form.relationKey} onChange={(e) => setForm((current) => ({ ...current, relationKey: e.target.value }))}>
+                <option value="">Ninguno</option>
+                {relationOptions.map((option) => (
+                  <option key={`${option.type}:${option.id}`} value={`${option.type}:${option.id}`}>
+                    {noteRelationLabels[option.type]} · {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <label className="customer-picker-item">
