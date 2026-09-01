@@ -5637,3 +5637,12 @@ button .material-symbols-outlined {
   justify-content: flex-end;
   gap: 12px;
 }
+/* Prevent modal drag on mobile */
+.modal-backdrop {
+  overscroll-behavior: contain;
+  touch-action: none;
+}
+.note-modal-body {
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+}

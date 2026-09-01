@@ -1024,15 +1024,23 @@ function NoteFormModal({ open, note, relationOptions, onClose, onSubmit, isSavin
                 <option value="completada">Completada</option>
               </select>
             </div>
+          </div>
 
+          <div className="form-row">
             <div className="form-group">
               <label htmlFor="note-date">Fecha</label>
-              <input id="note-date" className="form-input" type="date" value={form.date} onChange={(e) => setForm((current) => ({ ...current, date: e.target.value }))} />
+              <div className="input-with-icon">
+                <span className="material-symbols-outlined">calendar_today</span>
+                <input id="note-date" className="form-input" type="date" value={form.date} onChange={(e) => setForm((current) => ({ ...current, date: e.target.value }))} />
+              </div>
             </div>
 
             <div className="form-group">
               <label htmlFor="note-time">Hora</label>
-              <input id="note-time" className="form-input" type="time" value={form.time} onChange={(e) => setForm((current) => ({ ...current, time: e.target.value }))} disabled={!form.date} />
+              <div className="input-with-icon">
+                <span className="material-symbols-outlined">schedule</span>
+                <input id="note-time" className="form-input" type="time" value={form.time} onChange={(e) => setForm((current) => ({ ...current, time: e.target.value }))} disabled={!form.date} />
+              </div>
             </div>
           </div>
 
