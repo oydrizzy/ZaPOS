@@ -5569,3 +5569,71 @@ button .material-symbols-outlined {
   color: #fff;
   border-color: var(--accent);
 }
+/* -- Note Modal -------------------------------------------- */
+.note-modal {
+  width: min(520px, 92vw);
+  max-height: 90vh; /* Fixed height relative to viewport */
+  background: #ffffff;
+  border-radius: var(--radius-xl);
+  box-shadow: 0 24px 60px rgba(8, 47, 26, 0.22);
+  display: flex;
+  flex-direction: column;
+  animation: dialogPop 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.note-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.note-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.note-modal-title .material-symbols-outlined {
+  color: var(--accent);
+  font-size: 1.3rem;
+}
+
+.note-modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.note-modal-body .form-group {
+  margin-bottom: 0;
+}
+
+.note-modal-body .form-input,
+.note-modal-body .form-select,
+.note-modal-body textarea {
+  padding: 14px 16px; /* more spacious */
+  font-size: 1rem;
+}
+
+.note-modal-body .input-with-icon .form-input {
+  padding-left: 42px;
+}
+
+.note-modal-footer {
+  padding: 16px 24px;
+  background: var(--surface-2);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}

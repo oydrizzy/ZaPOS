@@ -1231,7 +1231,7 @@ function NotesModule({
       </SmartSearch>
 
       {filteredNotes.length === 0 ? (
-        <div className="inventory-card">
+        <div className="inventory-card" style={{ justifyContent: 'center' }}>
           <EmptyState
             icon={hasFilters ? 'search_off' : 'sticky_note_2'}
             title={hasFilters ? 'No encontramos notas' : 'No tienes notas todavia'}
