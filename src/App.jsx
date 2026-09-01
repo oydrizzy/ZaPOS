@@ -967,9 +967,9 @@ function NoteFormModal({ open, note, relationOptions, onClose, onSubmit, isSavin
 
   return (
     <div className="modal-backdrop" onClick={() => !isSaving && onClose()}>
-      <div className="customer-picker-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="customer-picker-header">
-          <div className="customer-picker-title">
+      <form className="note-modal" onClick={(e) => e.stopPropagation()} onSubmit={handleSubmit}>
+        <div className="note-modal-header">
+          <div className="note-modal-title">
             <span className="material-symbols-outlined">sticky_note_2</span>
             <span>{note ? 'Editar nota' : 'Nueva nota'}</span>
           </div>
@@ -978,8 +978,7 @@ function NoteFormModal({ open, note, relationOptions, onClose, onSubmit, isSavin
           </button>
         </div>
 
-        <div className="customer-picker-list">
-        <form className="inventory-form" onSubmit={handleSubmit}>
+        <div className="note-modal-body">
           <div className="form-group">
             <label htmlFor="note-title">Titulo</label>
             <div className="input-with-icon">
@@ -1053,19 +1052,16 @@ function NoteFormModal({ open, note, relationOptions, onClose, onSubmit, isSavin
             <input type="checkbox" checked={form.pinned} onChange={(e) => setForm((current) => ({ ...current, pinned: e.target.checked }))} />
             <span>Fijada</span>
           </label>
-
-          <div className="form-actions">
-            <button type="button" className="ghost-btn" onClick={onClose} disabled={isSaving}>
-              Cancelar
-            </button>
-            <button type="submit" className="primary-btn" disabled={isSaving || !form.title.trim()}>
-              <span className="material-symbols-outlined">save</span>
-              {isSaving ? 'Guardando...' : 'Guardar'}
-            </button>
-          </div>
-        </form>
         </div>
-      </div>
+
+        <div className="note-modal-footer">
+          <button type="button" className="ghost-btn" onClick={onClose} disabled={isSaving}>Cancelar</button>
+          <button type="submit" className="primary-btn" disabled={isSaving || !form.title.trim()}>
+            <span className="material-symbols-outlined">{isSaving ? 'hourglass_empty' : 'save'}</span>
+            {isSaving ? 'Guardando...' : 'Guardar nota'}
+          </button>
+        </div>
+      </form>
     </div>
   )
 }
@@ -1241,12 +1237,6 @@ function NotesModule({
             title={hasFilters ? 'No encontramos notas' : 'No tienes notas todavia'}
             subtitle={hasFilters ? 'Prueba cambiando la busqueda o los filtros.' : 'Crea una nota para guardar algo importante.'}
           />
-          {!hasFilters && (
-            <button className="primary-btn" type="button" onClick={onNew}>
-              <span className="material-symbols-outlined">add</span>
-              Nueva nota
-            </button>
-          )}
         </div>
       ) : (
         <>
