@@ -6,11 +6,14 @@ import {
   createCashMovement as createCashMovementService,
   createDebtSale,
   createLog,
+  createNote as createNoteService,
   createProduct as createProductService,
   createSale,
+  deleteNote as deleteNoteService,
   deleteProduct as deleteProductService,
   getAppState,
   reverseTransaction as reverseTransactionService,
+  updateNote as updateNoteService,
   updateProduct as updateProductService,
 } from './services'
 
@@ -132,6 +135,72 @@ function formatDate(dateStr) {
     month: 'short',
     year: 'numeric',
   })
+}
+
+function toDateInputValue(dateStr) {
+  if (!dateStr) return ''
+  const date = new Date(dateStr)
+  if (Number.isNaN(date.getTime())) return ''
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+}
+
+function toTimeInputValue(dateStr) {
+  if (!dateStr) return ''
+  const date = new Date(dateStr)
+  if (Number.isNaN(date.getTime())) return ''
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+}
+
+function buildNoteDate(dateValue, timeValue) {
+  if (!dateValue) return ''
+  const time = timeValue || '00:00'
+  return new Date(`${dateValue}T${time}:00`).toISOString()
+}
+
+function isSameCalendarDate(date, compare) {
+  return date.getFullYear() === compare.getFullYear()
+    && date.getMonth() === compare.getMonth()
+    && date.getDate() === compare.getDate()
+}
+
+function formatNoteDate(dateStr) {
+  if (!dateStr) return 'Sin fecha'
+  const date = new Date(dateStr)
+  if (Number.isNaN(date.getTime())) return 'Sin fecha'
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const tomorrow = new Date(today)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  const hasTime = date.getHours() !== 0 || date.getMinutes() !== 0
+  const time = hasTime
+    ? ` · ${date.toLocaleTimeString('es-DO', { hour: 'numeric', minute: '2-digit' })}`
+    : ''
+
+  if (date < today) return `Vencida · ${formatDate(dateStr)}`
+  if (isSameCalendarDate(date, today)) return `Hoy${time}`
+  if (isSameCalendarDate(date, tomorrow)) return `Mañana${time}`
+  return `${formatDate(dateStr)}${time}`
+}
+
+function noteDateMatches(dateStr, filter) {
+  if (filter === 'all') return true
+  if (filter === 'none') return !dateStr
+  if (!dateStr) return false
+
+  const date = new Date(dateStr)
+  if (Number.isNaN(date.getTime())) return false
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const tomorrow = new Date(today)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  const weekEnd = new Date(today)
+  weekEnd.setDate(weekEnd.getDate() + 7)
+
+  if (filter === 'today') return isSameCalendarDate(date, today)
+  if (filter === 'tomorrow') return isSameCalendarDate(date, tomorrow)
+  if (filter === 'week') return date >= today && date < weekEnd
+  if (filter === 'overdue') return date < today
+  return true
 }
 
 
@@ -784,6 +853,402 @@ function Pagination({ page, totalPages, start, end, total, onPageChange }) {
       >
         <span className="material-symbols-outlined">chevron_right</span>
       </button>
+    </div>
+  )
+}
+
+const notePriorityLabels = {
+  normal: 'Normal',
+  importante: 'Importante',
+  urgente: 'Urgente',
+}
+
+const noteStatusLabels = {
+  pendiente: 'Pendiente',
+  completada: 'Completada',
+}
+
+const noteRelationLabels = {
+  deuda: 'Deuda',
+  producto: 'Producto',
+  venta: 'Venta',
+  caja: 'Caja',
+  cliente: 'Cliente',
+}
+
+function getNoteRelationOptions({ products = [], debts = [], transactions = [] }) {
+  const debtOptions = debts.map((debt) => ({
+    type: 'deuda',
+    id: debt.id,
+    label: `Deuda #${String(debt.id).slice(-5)} · ${debt.customerName || 'Cliente'}`,
+    search: `${debt.customerName} deuda ${debt.id}`,
+  }))
+  const productOptions = products.map((product) => ({
+    type: 'producto',
+    id: product.id,
+    label: productTitle(product),
+    search: `${productTitle(product)} producto ${product.id}`,
+  }))
+  const transactionOptions = transactions.map((transaction) => ({
+    type: transaction.type === 'income' || transaction.type === 'expense' ? 'caja' : 'venta',
+    id: transaction.id,
+    label: `${transaction.type === 'income' ? 'Ingreso' : transaction.type === 'expense' ? 'Egreso' : 'Venta'} #${String(transaction.id).slice(-5)} · ${formatCurrency(transaction.amount)}`,
+    search: `${transaction.note} ${transaction.customerName} ${transaction.id}`,
+  }))
+
+  return [...debtOptions, ...productOptions, ...transactionOptions]
+}
+
+function getNoteRelationLabel(note, relationOptions) {
+  if (!note.relationType) return ''
+  const relation = relationOptions.find((option) =>
+    option.type === note.relationType && Number(option.id) === Number(note.relationId)
+  )
+  if (relation) return relation.label
+  const fallback = noteRelationLabels[note.relationType] || note.relationType
+  return note.relationId ? `${fallback} #${String(note.relationId).slice(-5)}` : fallback
+}
+
+function NoteFormModal({ open, note, relationOptions, onClose, onSubmit, isSaving }) {
+  const [form, setForm] = useState({
+    title: '',
+    description: '',
+    priority: 'normal',
+    status: 'pendiente',
+    pinned: false,
+    date: '',
+    time: '',
+    relationKey: '',
+  })
+
+  useEffect(() => {
+    if (!open) return
+    setForm({
+      title: note?.title || '',
+      description: note?.description || '',
+      priority: note?.priority || 'normal',
+      status: note?.status || 'pendiente',
+      pinned: Boolean(note?.pinned),
+      date: toDateInputValue(note?.noteDate),
+      time: note?.noteDate ? toTimeInputValue(note.noteDate) : '',
+      relationKey: note?.relationType && note?.relationId ? `${note.relationType}:${note.relationId}` : '',
+    })
+  }, [open, note])
+
+  useEffect(() => {
+    if (!open) return undefined
+    const onKey = (e) => { if (e.key === 'Escape' && !isSaving) onClose() }
+    document.addEventListener('keydown', onKey)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.body.style.overflow = ''
+    }
+  }, [open, isSaving, onClose])
+
+  if (!open) return null
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    const title = form.title.trim()
+    if (!title) return
+    const [relationType, relationId] = form.relationKey ? form.relationKey.split(':') : ['', '']
+    onSubmit({
+      title,
+      description: form.description.trim(),
+      priority: form.priority,
+      status: form.status,
+      pinned: form.pinned,
+      noteDate: buildNoteDate(form.date, form.time),
+      relationType,
+      relationId: relationId ? Number(relationId) : '',
+    })
+  }
+
+  return (
+    <div className="modal-backdrop" onClick={() => !isSaving && onClose()}>
+      <div className="note-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="note-modal-header">
+          <div>
+            <span>{note ? 'Editar nota' : 'Nueva nota'}</span>
+            <strong>{note ? 'Actualiza los detalles' : 'Guarda algo importante'}</strong>
+          </div>
+          <button type="button" className="note-icon-btn" onClick={onClose} disabled={isSaving} aria-label="Cerrar">
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <form className="note-form" onSubmit={handleSubmit}>
+          <label className="form-group">
+            <span>Titulo</span>
+            <div className="input-with-icon">
+              <span className="material-symbols-outlined">sticky_note_2</span>
+              <input
+                className="form-input"
+                value={form.title}
+                onChange={(e) => setForm((current) => ({ ...current, title: e.target.value }))}
+                maxLength={150}
+                placeholder="Ej. Cobrar a Richardson"
+                required
+              />
+            </div>
+          </label>
+
+          <label className="form-group">
+            <span>Descripcion</span>
+            <textarea
+              className="note-textarea"
+              value={form.description}
+              onChange={(e) => setForm((current) => ({ ...current, description: e.target.value }))}
+              placeholder="Detalles de la nota"
+              rows={4}
+            />
+          </label>
+
+          <div className="note-form-grid">
+            <label className="form-group">
+              <span>Prioridad</span>
+              <select className="form-select" value={form.priority} onChange={(e) => setForm((current) => ({ ...current, priority: e.target.value }))}>
+                <option value="normal">Normal</option>
+                <option value="importante">Importante</option>
+                <option value="urgente">Urgente</option>
+              </select>
+            </label>
+
+            <label className="form-group">
+              <span>Estado</span>
+              <select className="form-select" value={form.status} onChange={(e) => setForm((current) => ({ ...current, status: e.target.value }))}>
+                <option value="pendiente">Pendiente</option>
+                <option value="completada">Completada</option>
+              </select>
+            </label>
+
+            <label className="form-group">
+              <span>Fecha</span>
+              <input className="form-input" type="date" value={form.date} onChange={(e) => setForm((current) => ({ ...current, date: e.target.value }))} />
+            </label>
+
+            <label className="form-group">
+              <span>Hora</span>
+              <input className="form-input" type="time" value={form.time} onChange={(e) => setForm((current) => ({ ...current, time: e.target.value }))} disabled={!form.date} />
+            </label>
+          </div>
+
+          <label className="form-group">
+            <span>Relacionar con</span>
+            <select className="form-select" value={form.relationKey} onChange={(e) => setForm((current) => ({ ...current, relationKey: e.target.value }))}>
+              <option value="">Ninguno</option>
+              {relationOptions.map((option) => (
+                <option key={`${option.type}:${option.id}`} value={`${option.type}:${option.id}`}>
+                  {noteRelationLabels[option.type]} · {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="note-check">
+            <input type="checkbox" checked={form.pinned} onChange={(e) => setForm((current) => ({ ...current, pinned: e.target.checked }))} />
+            <span>Fijada</span>
+          </label>
+
+          <div className="form-actions">
+            <button type="button" className="ghost-btn" onClick={onClose} disabled={isSaving}>
+              Cancelar
+            </button>
+            <button type="submit" className="primary-btn" disabled={isSaving || !form.title.trim()}>
+              <span className="material-symbols-outlined">save</span>
+              {isSaving ? 'Guardando...' : 'Guardar'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+function NotesModule({
+  notes,
+  products,
+  debts,
+  transactions,
+  onNew,
+  onEdit,
+  onDelete,
+  onOpenRelation,
+  onTogglePinned,
+  onToggleStatus,
+  savingAction,
+}) {
+  const [search, setSearch] = useState('')
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  const [filters, setFilters] = useState({ status: 'all', priority: 'all', date: 'all', sort: 'recent' })
+  const debouncedSearch = useDebounce(search, 250)
+  const relationOptions = useMemo(() => getNoteRelationOptions({ products, debts, transactions }), [products, debts, transactions])
+
+  const filteredNotes = useMemo(() => {
+    const needle = normalizeText(debouncedSearch)
+    const priorityRank = { urgente: 3, importante: 2, normal: 1 }
+
+    return notes
+      .filter((note) => {
+        const relationLabel = getNoteRelationLabel(note, relationOptions)
+        const textOk = !needle || normalizeText(`${note.title} ${note.description} ${relationLabel}`).includes(needle)
+        const statusOk = filters.status === 'all' || note.status === filters.status
+        const priorityOk = filters.priority === 'all' || note.priority === filters.priority
+        const dateOk = noteDateMatches(note.noteDate, filters.date)
+        return textOk && statusOk && priorityOk && dateOk
+      })
+      .sort((a, b) => {
+        if (a.pinned !== b.pinned) return a.pinned ? -1 : 1
+        if (a.status !== b.status) return a.status === 'pendiente' ? -1 : 1
+        if (filters.sort === 'oldest') return new Date(a.createdAt) - new Date(b.createdAt)
+        if (filters.sort === 'date') {
+          if (!a.noteDate && !b.noteDate) return new Date(b.createdAt) - new Date(a.createdAt)
+          if (!a.noteDate) return 1
+          if (!b.noteDate) return -1
+          return new Date(a.noteDate) - new Date(b.noteDate)
+        }
+        if (filters.sort === 'priority') return (priorityRank[b.priority] || 0) - (priorityRank[a.priority] || 0)
+        return new Date(b.createdAt) - new Date(a.createdAt)
+      })
+  }, [notes, debouncedSearch, filters, relationOptions])
+
+  const pinnedNotes = filteredNotes.filter((note) => note.pinned)
+  const recentNotes = filteredNotes.filter((note) => !note.pinned)
+  const hasFilters = search || filters.status !== 'all' || filters.priority !== 'all' || filters.date !== 'all' || filters.sort !== 'recent'
+
+  const setFilter = (key, value) => setFilters((current) => ({ ...current, [key]: value }))
+  const clearFilters = () => {
+    setSearch('')
+    setFilters({ status: 'all', priority: 'all', date: 'all', sort: 'recent' })
+  }
+
+  const renderNote = (note) => {
+    const relationLabel = getNoteRelationLabel(note, relationOptions)
+    return (
+      <li key={note.id} className={`note-card ${note.status === 'completada' ? 'completed' : ''}`}>
+        <div className="note-card-main">
+          <button type="button" className={`note-pin ${note.pinned ? 'active' : ''}`} onClick={() => onTogglePinned(note)} aria-label={note.pinned ? 'Desfijar nota' : 'Fijar nota'}>
+            <span className="material-symbols-outlined">push_pin</span>
+          </button>
+          <div className="note-card-copy">
+            <strong>{note.title}</strong>
+            {note.description && <p>{note.description}</p>}
+            <span className="note-date">{formatNoteDate(note.noteDate)}</span>
+            {relationLabel && <span className="note-relation">{relationLabel}</span>}
+          </div>
+        </div>
+        <div className="note-card-footer">
+          <div className="note-badges">
+            <span className={`note-badge priority-${note.priority}`}>{notePriorityLabels[note.priority]}</span>
+            <span className={`note-badge status-${note.status}`}>{noteStatusLabels[note.status]}</span>
+          </div>
+          <div className="note-actions">
+            <button type="button" className="note-icon-btn" onClick={() => onToggleStatus(note)} disabled={savingAction === `note-status-${note.id}`} title={note.status === 'completada' ? 'Volver a pendiente' : 'Completar'}>
+              <span className="material-symbols-outlined">{note.status === 'completada' ? 'undo' : 'check_circle'}</span>
+            </button>
+            <button type="button" className="note-icon-btn" onClick={() => onEdit(note)} title="Editar">
+              <span className="material-symbols-outlined">edit_square</span>
+            </button>
+            {relationLabel && (
+              <button type="button" className="note-icon-btn" onClick={() => onOpenRelation(note)} title="Ver relacion">
+                <span className="material-symbols-outlined">open_in_new</span>
+              </button>
+            )}
+            <button type="button" className="note-icon-btn danger" onClick={() => onDelete(note)} title="Eliminar">
+              <span className="material-symbols-outlined">delete_forever</span>
+            </button>
+          </div>
+        </div>
+      </li>
+    )
+  }
+
+  return (
+    <div className="notes-shell">
+      <div className="section-head">
+        <div className="section-title-row">
+          <span className="material-symbols-outlined">sticky_note_2</span>
+          <span className="section-title">Notas</span>
+        </div>
+        <button className="primary-btn" type="button" onClick={onNew}>
+          <span className="material-symbols-outlined">add</span>
+          Nueva nota
+        </button>
+      </div>
+
+      <SmartSearch value={search} onChange={setSearch} placeholder="Buscar notas..." count={`${filteredNotes.length} notas`}>
+        <button className={`filter-btn ${hasFilters ? 'active' : ''}`} type="button" onClick={() => setFiltersOpen(true)}>
+          <span className="material-symbols-outlined">tune</span>
+          Filtros
+        </button>
+      </SmartSearch>
+
+      {filteredNotes.length === 0 ? (
+        <div className="note-empty-card">
+          <EmptyState
+            icon={hasFilters ? 'search_off' : 'sticky_note_2'}
+            title={hasFilters ? 'No encontramos notas' : 'No tienes notas todavia'}
+            subtitle={hasFilters ? 'Prueba cambiando la busqueda o los filtros.' : 'Crea una nota para guardar algo importante.'}
+          />
+          {!hasFilters && (
+            <button className="primary-btn" type="button" onClick={onNew}>
+              <span className="material-symbols-outlined">add</span>
+              Nueva nota
+            </button>
+          )}
+        </div>
+      ) : (
+        <>
+          {pinnedNotes.length > 0 && (
+            <section className="notes-section">
+              <span className="notes-section-title">Fijadas</span>
+              <ul className="notes-list">{pinnedNotes.map(renderNote)}</ul>
+            </section>
+          )}
+          {recentNotes.length > 0 && (
+            <section className="notes-section">
+              <span className="notes-section-title">Recientes</span>
+              <ul className="notes-list">{recentNotes.map(renderNote)}</ul>
+            </section>
+          )}
+        </>
+      )}
+
+      <FilterSheet isOpen={filtersOpen} onClose={() => setFiltersOpen(false)} onClear={clearFilters} onApply={() => setFiltersOpen(false)}>
+        <div className="filter-sheet-section">
+          <h4>Estado</h4>
+          <div className="filter-chips-row">
+            {[['all', 'Todas'], ['pendiente', 'Pendientes'], ['completada', 'Completadas']].map(([value, label]) => (
+              <button key={value} type="button" className={`filter-chip ${filters.status === value ? 'active' : ''}`} onClick={() => setFilter('status', value)}>{label}</button>
+            ))}
+          </div>
+        </div>
+        <div className="filter-sheet-section">
+          <h4>Prioridad</h4>
+          <div className="filter-chips-row">
+            {[['all', 'Todas'], ['normal', 'Normal'], ['importante', 'Importante'], ['urgente', 'Urgente']].map(([value, label]) => (
+              <button key={value} type="button" className={`filter-chip ${filters.priority === value ? 'active' : ''}`} onClick={() => setFilter('priority', value)}>{label}</button>
+            ))}
+          </div>
+        </div>
+        <div className="filter-sheet-section">
+          <h4>Fecha</h4>
+          <div className="filter-chips-row">
+            {[['all', 'Todas'], ['today', 'Hoy'], ['tomorrow', 'Mañana'], ['week', 'Esta semana'], ['overdue', 'Vencidas'], ['none', 'Sin fecha']].map(([value, label]) => (
+              <button key={value} type="button" className={`filter-chip ${filters.date === value ? 'active' : ''}`} onClick={() => setFilter('date', value)}>{label}</button>
+            ))}
+          </div>
+        </div>
+        <div className="filter-sheet-section">
+          <h4>Orden</h4>
+          <div className="filter-chips-row">
+            {[['recent', 'Mas recientes'], ['oldest', 'Mas antiguas'], ['date', 'Fecha mas cercana'], ['priority', 'Prioridad']].map(([value, label]) => (
+              <button key={value} type="button" className={`filter-chip ${filters.sort === value ? 'active' : ''}`} onClick={() => setFilter('sort', value)}>{label}</button>
+            ))}
+          </div>
+        </div>
+      </FilterSheet>
     </div>
   )
 }
@@ -1765,6 +2230,7 @@ function App() {
   const [transactions, setTransactions] = useState([])
   const [debts, setDebts] = useState([])
   const [logs, setLogs] = useState([])
+  const [notes, setNotes] = useState([])
   const [toasts, setToasts] = useState([])
   const [debtSaleForm, setDebtSaleForm] = useState({ customerName: '', paidAmount: '' })
   const [movementForm, setMovementForm] = useState({
@@ -1784,6 +2250,8 @@ function App() {
   const [inventoryTypeFilter, setInventoryTypeFilter] = useState('Todos')
   const [inventoryListPage, setInventoryListPage] = useState(1)
   const [confirmRemove, setConfirmRemove] = useState({ open: false, productId: null })
+  const [confirmNoteRemove, setConfirmNoteRemove] = useState({ open: false, note: null })
+  const [noteModal, setNoteModal] = useState({ open: false, note: null })
   const [priceEdit, setPriceEdit] = useState({ open: false, itemId: null, value: '' })
   const [savingAction, setSavingAction] = useState(null)
 
@@ -1924,6 +2392,11 @@ function App() {
       .sort((a, b) => b.totalPending - a.totalPending)
   }, [debts])
 
+  const noteRelationOptions = useMemo(
+    () => getNoteRelationOptions({ products, debts, transactions }),
+    [products, debts, transactions]
+  )
+
 
   const resetStockForm = () =>
     setStockForm({ name: '', type: 'Hybrida', size: '1 g', purchasePrice: '', salePrice: '', stock: '', image: '', imageName: '' })
@@ -1972,6 +2445,7 @@ function App() {
     setTransactions(data.transactions || [])
     setDebts(data.debts || [])
     setLogs(data.logs || [])
+    setNotes(data.notes || [])
     return data
   }
 
@@ -1998,6 +2472,7 @@ function App() {
         setTransactions([])
         setDebts([])
         setLogs([])
+        setNotes([])
         setCart([])
         setActiveTab('ventas')
       }
@@ -2019,6 +2494,7 @@ function App() {
         setTransactions(data.transactions || [])
         setDebts(data.debts || [])
         setLogs(data.logs || [])
+        setNotes(data.notes || [])
       })
       .catch((error) => {
         console.warn(error)
@@ -2258,6 +2734,89 @@ function App() {
     }
   }
 
+  const openNoteModal = (note = null) => setNoteModal({ open: true, note })
+  const closeNoteModal = () => setNoteModal({ open: false, note: null })
+
+  const saveNote = async (draft) => {
+    if (savingAction) return
+    setSavingAction('note-save')
+    try {
+      const saved = noteModal.note
+        ? await updateNoteService(noteModal.note.id, draft)
+        : await createNoteService(draft)
+      await refreshAppState()
+      closeNoteModal()
+      showToast(noteModal.note ? 'Nota actualizada' : 'Nota creada')
+      return saved
+    } catch (error) {
+      showToast(error.message || 'No se pudo guardar la nota', 'error')
+    } finally {
+      setSavingAction(null)
+    }
+  }
+
+  const toggleNotePinned = async (note) => {
+    if (savingAction) return
+    setSavingAction(`note-pin-${note.id}`)
+    try {
+      await updateNoteService(note.id, { ...note, pinned: !note.pinned })
+      await refreshAppState()
+      showToast(!note.pinned ? 'Nota fijada' : 'Nota desfijada')
+    } catch (error) {
+      showToast(error.message || 'No se pudo actualizar la nota', 'error')
+    } finally {
+      setSavingAction(null)
+    }
+  }
+
+  const toggleNoteStatus = async (note) => {
+    if (savingAction) return
+    const nextStatus = note.status === 'completada' ? 'pendiente' : 'completada'
+    setSavingAction(`note-status-${note.id}`)
+    try {
+      await updateNoteService(note.id, { ...note, status: nextStatus })
+      await refreshAppState()
+      showToast(nextStatus === 'completada' ? 'Nota completada' : 'Nota pendiente')
+    } catch (error) {
+      showToast(error.message || 'No se pudo actualizar la nota', 'error')
+    } finally {
+      setSavingAction(null)
+    }
+  }
+
+  const openNoteRemoveModal = (note) => setConfirmNoteRemove({ open: true, note })
+  const closeNoteRemoveModal = () => setConfirmNoteRemove({ open: false, note: null })
+
+  const openNoteRelation = (note) => {
+    if (note.relationType === 'producto') {
+      setActiveTab('inventario')
+      openInventoryList()
+      return
+    }
+    if (note.relationType === 'deuda' || note.relationType === 'cliente') {
+      setActiveTab('deudas')
+      return
+    }
+    if (note.relationType === 'venta' || note.relationType === 'caja') {
+      setActiveTab('caja')
+    }
+  }
+
+  const removeNote = async () => {
+    if (savingAction || !confirmNoteRemove.note) return
+    setSavingAction('delete-note')
+    try {
+      await deleteNoteService(confirmNoteRemove.note.id)
+      await refreshAppState()
+      closeNoteRemoveModal()
+      showToast('Nota eliminada')
+    } catch (error) {
+      showToast(error.message || 'No se pudo eliminar la nota', 'error')
+    } finally {
+      setSavingAction(null)
+    }
+  }
+
   const handleImageFileChange = (e) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -2359,6 +2918,15 @@ function App() {
             <span className="brand-name">Z4Z4</span>
           </div>
         </div>
+
+        <button
+          className={`topbar-notes-btn ${activeTab === 'notas' ? 'active' : ''}`}
+          type="button"
+          onClick={() => setActiveTab('notas')}
+        >
+          <span className="material-symbols-outlined">sticky_note_2</span>
+          <span>Notas</span>
+        </button>
 
         <button
           className="pushable"
@@ -2921,6 +3489,22 @@ function App() {
           <EstimatesModule products={products} cashSummary={cashSummary} />
         )}
 
+        {activeTab === 'notas' && (
+          <NotesModule
+            notes={notes}
+            products={products}
+            debts={debts}
+            transactions={transactions}
+            onNew={() => openNoteModal()}
+            onEdit={openNoteModal}
+            onDelete={openNoteRemoveModal}
+            onOpenRelation={openNoteRelation}
+            onTogglePinned={toggleNotePinned}
+            onToggleStatus={toggleNoteStatus}
+            savingAction={savingAction}
+          />
+        )}
+
       </div>
 
       {/* -- BOTTOM NAV -------------------------------------- */}
@@ -2976,6 +3560,26 @@ function App() {
         onConfirm={removeProduct}
         confirmLabel="Sí, eliminar"
         isLoading={savingAction === 'delete-product'}
+      />
+
+      <ConfirmDialog
+        open={confirmNoteRemove.open}
+        icon="warning"
+        title="Eliminar nota"
+        body="¿Seguro que deseas eliminar esta nota?"
+        onCancel={closeNoteRemoveModal}
+        onConfirm={removeNote}
+        confirmLabel="Eliminar"
+        isLoading={savingAction === 'delete-note'}
+      />
+
+      <NoteFormModal
+        open={noteModal.open}
+        note={noteModal.note}
+        relationOptions={noteRelationOptions}
+        onClose={closeNoteModal}
+        onSubmit={saveNote}
+        isSaving={savingAction === 'note-save'}
       />
 
       <ConfirmDialog
