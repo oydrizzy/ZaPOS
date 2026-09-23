@@ -383,3 +383,32 @@ test('application exposes six modules and shared sales/inventory KPI markup', as
   }
   assert.equal(products[0].stock, 4)
 })
+
+test('initial data loading shows a loader, then an error and a working retry without fake zero balances', async () => {
+  await act(async () => root.render(null))
+  const originalLoad = globalThis.__appServiceTest.getAppState
+  const originalWarn = console.warn
+  let rejectLoad
+  globalThis.__appServiceTest.getAppState = () =>
+    new Promise((_resolve, reject) => {
+      rejectLoad = reject
+    })
+  try {
+    await act(async () => root.render(React.createElement(App)))
+    assert.ok(document.querySelector('.module-loader'))
+    assert.equal(document.querySelector('.sales-workspace'), null)
+    assert.equal(document.querySelectorAll('.bottom-nav button').length, 6)
+    console.warn = () => {}
+    await act(async () => rejectLoad(new Error('Connection unavailable')))
+    assert.ok(document.querySelector('.module-load-error'))
+    assert.equal(document.querySelector('.sales-workspace'), null)
+    globalThis.__appServiceTest.getAppState = originalLoad
+    await click(findButton('Reintentar'))
+    assert.ok(document.querySelector('.sales-workspace'))
+    assert.equal(document.querySelector('.module-loader'), null)
+  } finally {
+    globalThis.__appServiceTest.getAppState = originalLoad
+    console.warn = originalWarn
+    await act(async () => root.render(null))
+  }
+})

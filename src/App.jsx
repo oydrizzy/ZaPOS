@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import logo from '../logo.png'
 import InterfaceIcon from './components/InterfaceIcon'
 import KpiCard from './components/KpiCard'
-import NotesModule from './components/NotesModule'
+import LazyNotesModule, { preloadNotes } from './components/LazyNotesModule'
+import ModuleLoader, { ModuleLoadError } from './components/ModuleLoader'
 import { getCurrentSession, signIn, signOut, subscribeToAuthChanges } from './services/authService'
 import {
   addDebtPayment as addDebtPaymentService,
@@ -187,7 +188,7 @@ function ConfirmDialog({
             {cancelLabel}
           </button>
           <button type="button" className={confirmClass} onClick={onConfirm} disabled={isLoading}>
-            {isLoading ? 'Procesando...' : confirmLabel}
+            {isLoading ? <><span className="app-spinner" aria-hidden="true" />Procesando...</> : confirmLabel}
           </button>
         </div>
       </div>
@@ -658,6 +659,7 @@ function LoginScreen({ form, setForm, onLogin, isSubmitting }) {
           </label>
 
           <button className="plain-auth-button" type="submit" disabled={isSubmitting}>
+            {isSubmitting && <span className="app-spinner" aria-hidden="true" />}
             {isSubmitting ? 'Entrando...' : 'Entrar'}
           </button>
         </form>
@@ -1767,6 +1769,8 @@ function App() {
   const [form, setForm] = useState({ email: '', password: '' })
   const [authLoading, setAuthLoading] = useState(true)
   const [authSubmitting, setAuthSubmitting] = useState(false)
+  const [dataLoad, setDataLoad] = useState({ owner: null, status: 'loading' })
+  const [loadAttempt, setLoadAttempt] = useState(0)
   const [products, setProducts] = useState(initialProducts)
   const [cart, setCart] = useState([])
   const [activeTab, setActiveTab] = useState('ventas')
@@ -2011,6 +2015,7 @@ function App() {
     const unsubscribe = subscribeToAuthChanges((session) => {
       setUser(session?.user || null)
       if (!session) {
+        setDataLoad({ owner: null, status: 'loading' })
         setProducts([])
         setTransactions([])
         setDebts([])
@@ -2029,6 +2034,7 @@ function App() {
   useEffect(() => {
     if (!user) return undefined
     let mounted = true
+    setDataLoad({ owner: user.id, status: 'loading' })
     getAppState()
       .then((data) => {
         if (!mounted) return
@@ -2036,15 +2042,18 @@ function App() {
         setTransactions(data.transactions || [])
         setDebts(data.debts || [])
         setLogs(data.logs || [])
+        setDataLoad({ owner: user.id, status: 'ready' })
       })
       .catch((error) => {
+        if (!mounted) return
         console.warn(error)
+        setDataLoad({ owner: user.id, status: 'error' })
         showToast('No se pudo cargar Supabase', 'error')
       })
     return () => {
       mounted = false
     }
-  }, [user])
+  }, [user?.id, loadAttempt])
 
   useEffect(() => {
     setSalesPage(1)
@@ -2345,7 +2354,7 @@ function App() {
           <main className="plain-auth-card">
             <img className="plain-auth-logo" src={logo} alt="Z4Z4" />
             <h1 className="plain-auth-title">Z4Z4</h1>
-            <p className="plain-auth-loading">Verificando sesión...</p>
+            <p className="plain-auth-loading" role="status"><span className="app-spinner" aria-hidden="true" />Verificando sesión...</p>
           </main>
         </div>
         <ToastHost toasts={toasts} onDismiss={dismissToast} />
@@ -2393,6 +2402,12 @@ function App() {
 
       {/* -- PAGE CONTENT ------------------------------------ */}
       <div className="page-content">
+        <div className="module-stage" key={activeTab}>
+        {dataLoad.owner !== user.id || dataLoad.status === 'loading' ? (
+          <ModuleLoader />
+        ) : dataLoad.status === 'error' ? (
+          <ModuleLoadError onRetry={() => setLoadAttempt((current) => current + 1)} />
+        ) : <>
 
         {/* -- VENTAS --------------------------------------- */}
         {activeTab === 'ventas' && (
@@ -2916,7 +2931,7 @@ function App() {
         )}
 
         {activeTab === 'notas' && (
-          <NotesModule
+          <LazyNotesModule
             key={user.id}
             products={products}
             debts={debts}
@@ -2933,8 +2948,11 @@ function App() {
             }}
           />
         )}
-
+        </>}
+        </div>
       </div>
+
+      {savingAction && <div className="app-saving-status" role="status"><span className="app-spinner" aria-hidden="true" />Guardando cambios...</div>}
 
       {/* -- BOTTOM NAV -------------------------------------- */}
       <nav className="bottom-nav" aria-label="Módulos">
@@ -2981,6 +2999,9 @@ function App() {
           type="button"
           className={`bottom-nav-btn ${activeTab === 'notas' ? 'active' : ''}`}
           aria-current={activeTab === 'notas' ? 'page' : undefined}
+          onPointerEnter={preloadNotes}
+          onFocus={preloadNotes}
+          onPointerDown={preloadNotes}
           onClick={() => setActiveTab('notas')}
         >
           <InterfaceIcon name="note" className="bottom-nav-icon" />

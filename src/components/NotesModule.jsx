@@ -7,6 +7,7 @@ import {
   updateNote
 } from '../services/notesService'
 import './notes.css'
+import ModuleLoader from './ModuleLoader'
 
 const priorityLabels = {
   normal: 'Normal',
@@ -454,10 +455,7 @@ export default function NotesModule({
         </div>
       )}
       {loading ? (
-        <div className="notes-empty" role="status">
-          <Icon>sync</Icon>
-          <p>Cargando notas...</p>
-        </div>
+        <ModuleLoader label="Cargando notas..." />
       ) : error ? (
         <div className="notes-empty" role="alert">
           <Icon>cloud_off</Icon>
@@ -907,7 +905,11 @@ export default function NotesModule({
                       Cancelar
                     </button>
                     <button type="submit" className="note-save" disabled={busy}>
-                      <Icon>{busy ? 'sync' : 'check'}</Icon>
+                      {busy ? (
+                        <span className="app-spinner" aria-hidden="true" />
+                      ) : (
+                        <Icon>check</Icon>
+                      )}
                       {busy
                         ? 'Guardando...'
                         : draft.id

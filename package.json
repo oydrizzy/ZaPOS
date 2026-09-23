@@ -4,6 +4,7 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
+    "test": "node --test scripts/app-interactions.test.mjs scripts/notes-ui.test.mjs scripts/notes-service.test.mjs",
     "test:notes": "node --test scripts/notes-ui.test.mjs scripts/notes-service.test.mjs",
     "api": "node server.js",
     "dev": "node scripts/dev-full.mjs",
