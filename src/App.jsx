@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import logo from '../logo.png'
+import { readWithTimeout } from './lib/readWithTimeout'
 import InterfaceIcon from './components/InterfaceIcon'
 import KpiCard from './components/KpiCard'
 import LazyNotesModule, { preloadNotes } from './components/LazyNotesModule'
@@ -1768,6 +1769,8 @@ function App() {
   const [user, setUser] = useState(null)
   const [form, setForm] = useState({ email: '', password: '' })
   const [authLoading, setAuthLoading] = useState(true)
+  const [authError, setAuthError] = useState('')
+  const [authAttempt, setAuthAttempt] = useState(0)
   const [authSubmitting, setAuthSubmitting] = useState(false)
   const [dataLoad, setDataLoad] = useState({ owner: null, status: 'loading' })
   const [loadAttempt, setLoadAttempt] = useState(0)
@@ -1998,21 +2001,29 @@ function App() {
 
   useEffect(() => {
     let mounted = true
+    let sessionResolved = false
+    setAuthLoading(true)
+    setAuthError('')
 
-    getCurrentSession()
+    readWithTimeout(getCurrentSession)
       .then((session) => {
-        if (!mounted) return
+        if (!mounted || sessionResolved) return
         setUser(session?.user || null)
       })
       .catch((error) => {
+        if (!mounted || sessionResolved) return
         console.warn(error)
-        showToast('No se pudo validar la sesión', 'error')
+        setAuthError(error.message || 'No se pudo validar la sesión.')
       })
       .finally(() => {
         if (mounted) setAuthLoading(false)
       })
 
     const unsubscribe = subscribeToAuthChanges((session) => {
+      if (!mounted) return
+      sessionResolved = true
+      setAuthLoading(false)
+      setAuthError('')
       setUser(session?.user || null)
       if (!session) {
         setDataLoad({ owner: null, status: 'loading' })
@@ -2029,13 +2040,13 @@ function App() {
       mounted = false
       unsubscribe()
     }
-  }, [])
+  }, [authAttempt])
 
   useEffect(() => {
     if (!user) return undefined
     let mounted = true
     setDataLoad({ owner: user.id, status: 'loading' })
-    getAppState()
+    readWithTimeout(getAppState)
       .then((data) => {
         if (!mounted) return
         setProducts(data.products || [])
@@ -2047,7 +2058,7 @@ function App() {
       .catch((error) => {
         if (!mounted) return
         console.warn(error)
-        setDataLoad({ owner: user.id, status: 'error' })
+        setDataLoad({ owner: user.id, status: 'error', message: error.message })
         showToast('No se pudo cargar Supabase', 'error')
       })
     return () => {
@@ -2347,14 +2358,18 @@ function App() {
     }
   }
 
-  if (authLoading) {
+  if (authLoading || authError) {
     return (
       <>
         <div className="plain-auth-screen">
           <main className="plain-auth-card">
             <img className="plain-auth-logo" src={logo} alt="Z4Z4" />
             <h1 className="plain-auth-title">Z4Z4</h1>
-            <p className="plain-auth-loading" role="status"><span className="app-spinner" aria-hidden="true" />Verificando sesión...</p>
+            {authError ? (
+              <ModuleLoadError title="No se pudo verificar la sesión" message={authError} onRetry={() => setAuthAttempt((current) => current + 1)} />
+            ) : (
+              <p className="plain-auth-loading" role="status"><span className="app-spinner" aria-hidden="true" />Verificando sesión...</p>
+            )}
           </main>
         </div>
         <ToastHost toasts={toasts} onDismiss={dismissToast} />
@@ -2406,7 +2421,7 @@ function App() {
         {dataLoad.owner !== user.id || dataLoad.status === 'loading' ? (
           <ModuleLoader />
         ) : dataLoad.status === 'error' ? (
-          <ModuleLoadError onRetry={() => setLoadAttempt((current) => current + 1)} />
+          <ModuleLoadError message={dataLoad.message} onRetry={() => setLoadAttempt((current) => current + 1)} />
         ) : <>
 
         {/* -- VENTAS --------------------------------------- */}

@@ -412,3 +412,98 @@ test('initial data loading shows a loader, then an error and a working retry wit
     await act(async () => root.render(null))
   }
 })
+
+test('stalled notes stop loading, retry successfully and ignore the old response', async (context) => {
+  context.mock.timers.enable({ apis: ['setTimeout'] })
+  const originalRead = globalThis.__notesServiceTest.getNotes
+  let finishOldRead
+  globalThis.__notesServiceTest.getNotes = () => new Promise((resolve) => { finishOldRead = resolve })
+  try {
+    await renderNotes()
+    assert.ok(document.querySelector('.module-loader'))
+    await act(async () => context.mock.timers.tick(15000))
+    assert.equal(document.querySelector('.module-loader'), null)
+    assert.ok(document.querySelector('[role="alert"]').textContent.includes('tardando demasiado'))
+    store = [makeNote(888, { title: 'Respuesta actual' })]
+    globalThis.__notesServiceTest.getNotes = originalRead
+    await click(findButton('Reintentar'))
+    assert.ok(byLabel('Abrir nota: Respuesta actual'))
+    await act(async () => finishOldRead([makeNote(777, { title: 'Respuesta vieja' })]))
+    assert.ok(byLabel('Abrir nota: Respuesta actual'))
+    assert.equal(byLabel('Abrir nota: Respuesta vieja'), null)
+    await click(findButton('Nueva nota'))
+    assert.equal(document.querySelectorAll('.notes-overlay .material-symbols-outlined').length, 0)
+    assert.ok(document.querySelector('.note-save svg path'))
+  } finally {
+    globalThis.__notesServiceTest.getNotes = originalRead
+    await act(async () => root.render(null))
+  }
+})
+
+test('stalled application data offers retry and does not show false inventory totals', async (context) => {
+  context.mock.timers.enable({ apis: ['setTimeout'] })
+  const originalRead = globalThis.__appServiceTest.getAppState
+  const originalWarn = console.warn
+  globalThis.__appServiceTest.getAppState = () => new Promise(() => {})
+  console.warn = () => {}
+  try {
+    await act(async () => root.render(React.createElement(App)))
+    assert.ok(document.querySelector('.module-loader'))
+    await act(async () => context.mock.timers.tick(15000))
+    assert.ok(document.querySelector('.module-load-error'))
+    assert.equal(document.querySelector('.sales-stats'), null)
+    globalThis.__appServiceTest.getAppState = originalRead
+    await click(findButton('Reintentar'))
+    assert.ok(document.querySelector('.sales-stats'))
+  } finally {
+    globalThis.__appServiceTest.getAppState = originalRead
+    console.warn = originalWarn
+    await act(async () => root.render(null))
+  }
+})
+
+test('stalled session verification can retry without clearing the saved session', async (context) => {
+  context.mock.timers.enable({ apis: ['setTimeout'] })
+  const originalSession = globalThis.__appServiceTest.getCurrentSession
+  const originalWarn = console.warn
+  globalThis.__appServiceTest.getCurrentSession = () => new Promise(() => {})
+  console.warn = () => {}
+  try {
+    await act(async () => root.render(React.createElement(App)))
+    assert.ok(document.querySelector('.plain-auth-loading'))
+    await act(async () => context.mock.timers.tick(15000))
+    assert.ok(document.querySelector('[role="alert"]').textContent.includes('verificar la sesión'))
+    assert.equal(document.querySelector('.plain-auth-form'), null)
+    globalThis.__appServiceTest.getCurrentSession = originalSession
+    await click(findButton('Reintentar'))
+    assert.ok(document.querySelector('.sales-workspace'))
+  } finally {
+    globalThis.__appServiceTest.getCurrentSession = originalSession
+    console.warn = originalWarn
+    await act(async () => root.render(null))
+  }
+})
+
+test('a confirmed auth event releases the loader even when getSession is still pending', async (context) => {
+  context.mock.timers.enable({ apis: ['setTimeout'] })
+  const originalSession = globalThis.__appServiceTest.getCurrentSession
+  const originalSubscribe = globalThis.__appServiceTest.subscribeToAuthChanges
+  let authChanged
+  globalThis.__appServiceTest.getCurrentSession = () => new Promise(() => {})
+  globalThis.__appServiceTest.subscribeToAuthChanges = (callback) => {
+    authChanged = callback
+    return () => {}
+  }
+  try {
+    await act(async () => root.render(React.createElement(App)))
+    await act(async () => authChanged({ user: { id: 'test-user' } }))
+    assert.ok(document.querySelector('.sales-workspace'))
+    await act(async () => context.mock.timers.tick(15000))
+    assert.ok(document.querySelector('.sales-workspace'))
+    assert.equal(document.querySelector('.module-load-error'), null)
+  } finally {
+    globalThis.__appServiceTest.getCurrentSession = originalSession
+    globalThis.__appServiceTest.subscribeToAuthChanges = originalSubscribe
+    await act(async () => root.render(null))
+  }
+})

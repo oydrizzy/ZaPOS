@@ -8,6 +8,8 @@ import {
 } from '../services/notesService'
 import './notes.css'
 import ModuleLoader from './ModuleLoader'
+import InterfaceIcon from './InterfaceIcon'
+import { readWithTimeout } from '../lib/readWithTimeout'
 
 const priorityLabels = {
   normal: 'Normal',
@@ -45,12 +47,16 @@ const blankNote = () => ({
   relationId: ''
 })
 
+const iconNames = {
+  edit_square: 'edit', edit_note: 'note', sticky_note_2: 'note', notes: 'note',
+  search: 'search', search_off: 'search', close: 'close', tune: 'tune',
+  cloud_off: 'cloudOff', push_pin: 'pin', flag: 'flag', check_circle: 'check',
+  schedule: 'clock', undo: 'undo', check: 'check', link: 'link',
+  arrow_outward: 'arrowOutward', chevron_left: 'chevronLeft',
+  chevron_right: 'chevronRight', delete: 'trash',
+}
 function Icon({ children }) {
-  return (
-    <span className="material-symbols-outlined" aria-hidden="true">
-      {children}
-    </span>
-  )
+  return <InterfaceIcon name={iconNames[children] || 'note'} />
 }
 
 function localDateTime(value) {
@@ -115,7 +121,7 @@ export default function NotesModule({
     let current = true
     setLoading(true)
     setError('')
-    getNotes()
+    readWithTimeout(getNotes)
       .then((data) => {
         if (current) setNotes(data)
       })
@@ -728,13 +734,12 @@ export default function NotesModule({
                   <span className="note-editor-heading-icon">
                     <Icon>edit_note</Icon>
                   </span>
-                  <h2
-                    id="note-editor-heading"
-                    tabIndex={-1}
-                    data-note-initial-focus
-                  >
-                    {draft.id ? 'Editar nota' : 'Nueva nota'}
-                  </h2>
+                  <div className="note-editor-heading-copy">
+                    <h2 id="note-editor-heading" tabIndex={-1} data-note-initial-focus>
+                      {draft.id ? 'Editar nota' : 'Nueva nota'}
+                    </h2>
+                    <p>Organiza los detalles de tu negocio.</p>
+                  </div>
                   <button
                     className="notes-tool"
                     type="button"
@@ -857,7 +862,7 @@ export default function NotesModule({
                         checked={draft.pinned}
                         onChange={(e) => change('pinned', e.target.checked)}
                       />
-                      <Icon>push_pin</Icon>Fijada
+                      <Icon>push_pin</Icon>Fijar nota
                     </label>
                     <label>
                       <input

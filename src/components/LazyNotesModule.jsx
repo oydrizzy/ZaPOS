@@ -1,5 +1,6 @@
 import { Component, Suspense, lazy, useMemo, useState } from 'react'
 import ModuleLoader, { ModuleLoadError } from './ModuleLoader'
+import { readWithTimeout } from '../lib/readWithTimeout'
 
 const loadNotes = () => import('./NotesModule')
 export const preloadNotes = () => {
@@ -25,7 +26,7 @@ class NotesBoundary extends Component {
 
 export default function LazyNotesModule(props) {
   const [attempt, setAttempt] = useState(0)
-  const Notes = useMemo(() => lazy(loadNotes), [attempt])
+  const Notes = useMemo(() => lazy(() => readWithTimeout(loadNotes)), [attempt])
   return (
     <NotesBoundary
       key={attempt}

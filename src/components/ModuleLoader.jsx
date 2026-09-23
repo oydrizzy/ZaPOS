@@ -1,3 +1,5 @@
+import InterfaceIcon from './InterfaceIcon'
+
 export default function ModuleLoader({ label = 'Cargando datos...' }) {
   return (
     <div
@@ -36,19 +38,16 @@ export default function ModuleLoader({ label = 'Cargando datos...' }) {
 
 export function ModuleLoadError({
   title = 'No se pudieron cargar los datos',
+  message = 'Revisa tu conexión e inténtalo otra vez.',
   onRetry
 }) {
   return (
     <div className="module-load-error" role="alert">
-      <span className="material-symbols-outlined" aria-hidden="true">
-        cloud_off
-      </span>
+      <InterfaceIcon name="cloudOff" />
       <h2>{title}</h2>
-      <p>Revisa tu conexión e inténtalo otra vez.</p>
+      <p>{message}</p>
       <button className="ghost-btn" type="button" onClick={onRetry}>
-        <span className="material-symbols-outlined" aria-hidden="true">
-          refresh
-        </span>
+        <InterfaceIcon name="refresh" />
         Reintentar
       </button>
     </div>

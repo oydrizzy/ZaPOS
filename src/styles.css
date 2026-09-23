@@ -5630,7 +5630,8 @@ button .material-symbols-outlined {
 .inventory-stat-caption { font-size: 12px; color: #75877c; line-height: 1.4; }
 .inventory-stat.kpi-warning .inventory-stat-icon { color: #ac7426; background: #fff6e8; }
 .inventory-stat.kpi-total { background: #f4faf6; border-color: #c9e0d1; }
-.inventory-stat.kpi-total .stat-value { color: #146438; }
+.inventory-stat.kpi-total { container-type: inline-size; }
+.inventory-stat.kpi-total .stat-value { color: #146438; font-size: clamp(16px, 6.5cqi, 23px); line-height: 1.3; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .bottom-nav .interface-icon { width: 22px; height: 22px; }
 .bottom-nav { padding-inline: max(4px, env(safe-area-inset-left)); backdrop-filter: none; }
 .bottom-nav-btn { min-height: 58px; }
@@ -5647,7 +5648,7 @@ button .material-symbols-outlined {
   .inventory-stat-heading { gap: 7px; }
   .inventory-stat .stat-value { font-size: 22px; }
   .inventory-stat.kpi-total { grid-column: 1 / -1; }
-  .inventory-stat.kpi-total .stat-value { font-size: 26px; }
+  .inventory-stat.kpi-total .stat-value { font-size: clamp(16px, 6.5cqi, 23px); }
 }
 
 /* Mobile app interactions also cover dialogs rendered outside #root. */
@@ -5711,7 +5712,7 @@ button:disabled { cursor: default; }
 .skeleton-row i:last-child { width: 38%; }
 @keyframes skeleton-breathe { from { opacity: 1; } to { opacity: .5; } }
 .module-load-error { display: grid; gap: 14px; justify-items: center; padding: 44px 16px; text-align: center; }
-.module-load-error > .material-symbols-outlined { font-size: 30px; color: #75877c; }
+.module-load-error > .interface-icon { width: 30px; height: 30px; color: #75877c; }
 .module-load-error h2 { font-size: 18px; font-weight: 600; }
 .module-load-error p { font-size: 14px; color: #607568; }
 .module-load-error button { display: flex; align-items: center; gap: 8px; min-height: 44px; }
