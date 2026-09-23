@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import logo from '../logo.png'
+import InterfaceIcon from './components/InterfaceIcon'
 import { getCurrentSession, signIn, signOut, subscribeToAuthChanges } from './services/authService'
 import {
   addDebtPayment as addDebtPaymentService,
@@ -525,9 +526,10 @@ function PaymentModal({ open, debt, onClose, onSubmit, isSaving }) {
 
   return (
     <div className="modal-backdrop" onClick={() => !isSaving && onClose()}>
-      <div className="payment-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="payment-modal" role="dialog" aria-modal="true" aria-labelledby="payment-modal-heading" onClick={(e) => e.stopPropagation()}>
         <div className="payment-modal-header">
           <div className="payment-modal-title">
+            <h2 id="payment-modal-heading">Registrar abono</h2>
             <span className="payment-modal-account">
               Cuenta #{String(debt.id).slice(-5)}
             </span>
@@ -540,7 +542,7 @@ function PaymentModal({ open, debt, onClose, onSubmit, isSaving }) {
             disabled={isSaving}
             aria-label="Cerrar"
           >
-            <span className="material-symbols-outlined">close</span>
+            <InterfaceIcon name="close" />
           </button>
         </div>
 
@@ -551,12 +553,14 @@ function PaymentModal({ open, debt, onClose, onSubmit, isSaving }) {
 
         <form className="payment-modal-form" onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-group-label">Monto a abonar</label>
+            <label className="form-group-label" htmlFor="payment-amount">Monto a abonar</label>
             <div className="input-with-icon">
-              <span className="material-symbols-outlined">payments</span>
+              <InterfaceIcon name="payment" />
               <input
+                id="payment-amount"
                 className="form-input"
                 type="number"
+                inputMode="decimal"
                 min="0.01"
                 max={remaining}
                 step="0.01"
@@ -571,10 +575,11 @@ function PaymentModal({ open, debt, onClose, onSubmit, isSaving }) {
           </div>
 
           <div className="form-group">
-            <label className="form-group-label">Método de pago</label>
+            <label className="form-group-label" htmlFor="payment-method">Método de pago</label>
             <div className="input-with-icon">
-              <span className="material-symbols-outlined">account_balance_wallet</span>
+              <InterfaceIcon name="wallet" />
               <select
+                id="payment-method"
                 className="form-select"
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value)}
@@ -587,17 +592,21 @@ function PaymentModal({ open, debt, onClose, onSubmit, isSaving }) {
           </div>
 
           <div className="form-group">
-            <label className="form-group-label">Nota (opcional)</label>
-            <div className="input-with-icon">
-              <span className="material-symbols-outlined">edit_note</span>
-              <input
-                className="form-input"
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder="Ej. Pago parcial"
-                disabled={isSaving}
-              />
-            </div>
+            <label className="form-group-label" htmlFor="payment-note">
+              <InterfaceIcon name="note" />
+              Nota <span className="field-optional">Opcional</span>
+            </label>
+            <textarea
+              id="payment-note"
+              className="form-input payment-note-input"
+              rows={3}
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Escribe un detalle sobre este abono…"
+              aria-describedby="payment-note-hint"
+              disabled={isSaving}
+            />
+            <p id="payment-note-hint" className="payment-note-hint">La nota se guardará junto con el abono.</p>
           </div>
 
           <div className="payment-modal-actions">
@@ -605,9 +614,7 @@ function PaymentModal({ open, debt, onClose, onSubmit, isSaving }) {
               Cancelar
             </button>
             <button type="submit" className="primary-btn" disabled={isSaving}>
-              <span className="material-symbols-outlined">
-                {isSaving ? 'hourglass_empty' : 'add_card'}
-              </span>
+              <InterfaceIcon name="check" />
               {isSaving ? 'Registrando...' : 'Registrar abono'}
             </button>
           </div>
@@ -1854,6 +1861,14 @@ function App() {
     () => products.reduce((s, p) => s + p.salePrice * p.stock, 0),
     [products]
   )
+  const outOfStockCount = useMemo(
+    () => products.filter((product) => product.stock <= 0).length,
+    [products]
+  )
+  const activeProductCount = useMemo(
+    () => products.filter((product) => product.stock > 0).length,
+    [products]
+  )
 
   const cashSummary = useMemo(() => {
     return transactions.reduce(
@@ -2615,21 +2630,30 @@ function App() {
             {inventoryPage === 'list' ? (
               <div className="inventory-shell">
 
-                {/* Header banners */}
-                <div className="stats-row">
-                  <div className="stat-card">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
-                      <span className="material-symbols-outlined" style={{ color: 'var(--accent)', background: 'var(--accent-soft)', padding: '5px', borderRadius: '8px', fontSize: '1.1rem' }}>category</span>
-                      <span className="stat-label" style={{ margin: 0 }}>Productos</span>
+                <div className="stats-row inventory-stats" aria-label="Resumen del inventario">
+                  <div className="stat-card inventory-stat inventory-stat-empty">
+                    <div className="inventory-stat-heading">
+                      <span className="inventory-stat-icon"><InterfaceIcon name="inventory" /></span>
+                      <span className="stat-label">Sin stock</span>
                     </div>
-                    <span className="stat-value">{products.length}</span>
+                    <span className="stat-value">{outOfStockCount}</span>
+                    <span className="inventory-stat-caption">Productos agotados</span>
                   </div>
-                  <div className="stat-card">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
-                      <span className="material-symbols-outlined" style={{ color: 'var(--accent)', background: 'var(--accent-soft)', padding: '5px', borderRadius: '8px', fontSize: '1.1rem' }}>request_quote</span>
-                      <span className="stat-label" style={{ margin: 0 }}>Valor total</span>
+                  <div className="stat-card inventory-stat">
+                    <div className="inventory-stat-heading">
+                      <span className="inventory-stat-icon"><InterfaceIcon name="check" /></span>
+                      <span className="stat-label">Productos activos</span>
                     </div>
-                    <span className="stat-value accent">{formatCurrency(totalInventoryValue)}</span>
+                    <span className="stat-value">{activeProductCount}</span>
+                    <span className="inventory-stat-caption">Con existencias disponibles</span>
+                  </div>
+                  <div className="stat-card inventory-stat inventory-stat-total">
+                    <div className="inventory-stat-heading">
+                      <span className="inventory-stat-icon"><InterfaceIcon name="wallet" /></span>
+                      <span className="stat-label">Valor total</span>
+                    </div>
+                    <span className="stat-value accent inventory-stat-amount">{formatCurrency(totalInventoryValue)}</span>
+                    <span className="inventory-stat-caption">Existencias a precio de venta</span>
                   </div>
                 </div>
 
