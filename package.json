@@ -4,6 +4,7 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
+    "test:notes": "node --test scripts/notes-ui.test.mjs scripts/notes-service.test.mjs",
     "api": "node server.js",
     "dev": "node scripts/dev-full.mjs",
     "dev:vite": "vite",
@@ -19,6 +20,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",
+    "jsdom": "^29.1.1",
     "vite": "^5.4.1"
   }
 }

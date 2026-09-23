@@ -5,12 +5,12 @@ import { getProducts } from './productsService'
 import { getTransactions } from './transactionsService'
 
 export async function getAppState() {
-  const [products, transactions, debts, logs, notes] = await Promise.all([
+  const [products, transactions, debts, logs, notesResult] = await Promise.all([
     getProducts(),
     getTransactions(),
     getDebts(),
     getLogs(),
-    getNotes(),
+    getNotes().then((notes) => ({ notes, notesError: null })).catch((error) => ({ notes: [], notesError: error.message })),
   ])
 
   return {
@@ -18,6 +18,6 @@ export async function getAppState() {
     transactions,
     debts,
     logs,
-    notes,
+    ...notesResult,
   }
 }

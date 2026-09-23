@@ -5604,3 +5604,48 @@ button .material-symbols-outlined {
   color: #fff;
   border-color: var(--accent);
 }
+
+/* Shared sales and inventory indicators. */
+.stats-row.inventory-stats,
+.stats-row.sales-stats {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.stat-card.inventory-stat {
+  align-content: start;
+  gap: 10px;
+  padding: 18px;
+  border: 1px solid #dce5df;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 2px 5px #163d2404;
+}
+
+.stat-card.inventory-stat::after { content: none; }
+.inventory-stat-heading { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.inventory-stat-icon { width: 34px; height: 34px; display: grid; place-items: center; flex-shrink: 0; border-radius: 8px; color: #267046; background: #eef6f0; }
+.inventory-stat .stat-label { color: #5b7163; font-size: 12px; font-weight: 500; text-transform: none; letter-spacing: 0; overflow-wrap: anywhere; }
+.inventory-stat .stat-value { font-size: 24px; font-weight: 650; letter-spacing: 0; color: #183d28; }
+.inventory-stat-caption { font-size: 12px; color: #75877c; line-height: 1.4; }
+.inventory-stat.kpi-warning .inventory-stat-icon { color: #ac7426; background: #fff6e8; }
+.inventory-stat.kpi-total { background: #f4faf6; border-color: #c9e0d1; }
+.inventory-stat.kpi-total .stat-value { color: #146438; }
+.bottom-nav .interface-icon { width: 22px; height: 22px; }
+.bottom-nav { padding-inline: max(4px, env(safe-area-inset-left)); backdrop-filter: none; }
+.bottom-nav-btn { min-height: 58px; }
+.bottom-nav-label { letter-spacing: 0; }
+.filter-chip, .filter-btn { transition: background-color 160ms, color 160ms, border-color 160ms; }
+
+@media (min-width: 768px) {
+  .bottom-nav { padding-inline: max(16px, calc((100% - 900px) / 2)); }
+}
+
+@media (max-width: 600px) {
+  .stats-row.inventory-stats, .stats-row.sales-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .stat-card.inventory-stat { padding: 14px; gap: 8px; }
+  .inventory-stat-heading { gap: 7px; }
+  .inventory-stat .stat-value { font-size: 22px; }
+  .inventory-stat.kpi-total { grid-column: 1 / -1; }
+  .inventory-stat.kpi-total .stat-value { font-size: 26px; }
+}

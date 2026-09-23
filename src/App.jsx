@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import logo from '../logo.png'
 import InterfaceIcon from './components/InterfaceIcon'
+import KpiCard from './components/KpiCard'
+import NotesModule from './components/NotesModule'
 import { getCurrentSession, signIn, signOut, subscribeToAuthChanges } from './services/authService'
 import {
   addDebtPayment as addDebtPaymentService,
@@ -2396,21 +2398,10 @@ function App() {
         {activeTab === 'ventas' && (
           <>
             <div className="sales-workspace">
-              <div className="stats-row">
-                <div className="stat-card">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
-                    <span className="material-symbols-outlined" style={{ color: 'var(--accent)', background: 'var(--accent-soft)', padding: '5px', borderRadius: '8px', fontSize: '1.1rem' }}>shopping_bag</span>
-                    <span className="stat-label" style={{ margin: 0 }}>Productos en el carrito</span>
-                  </div>
-                  <span className="stat-value">{cart.length}</span>
-                </div>
-                <div className="stat-card">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
-                    <span className="material-symbols-outlined" style={{ color: 'var(--accent)', background: 'var(--accent-soft)', padding: '5px', borderRadius: '8px', fontSize: '1.1rem' }}>payments</span>
-                    <span className="stat-label" style={{ margin: 0 }}>Total a cobrar</span>
-                  </div>
-                  <span className="stat-value accent">{formatCurrency(cartTotal)}</span>
-                </div>
+              <div className="stats-row sales-stats" aria-label="Resumen de la venta">
+                <KpiCard icon="inventory" label="En el carrito" value={cart.length} caption="Productos distintos" />
+                <KpiCard icon="check" label="Unidades" value={cart.reduce((total, item) => total + item.quantity, 0)} caption="Unidades de esta venta" />
+                <KpiCard icon="wallet" label="Total a cobrar" value={formatCurrency(cartTotal)} caption="Importe de esta venta" tone="total" />
               </div>
 
               {/* Product list */}
@@ -2631,30 +2622,9 @@ function App() {
               <div className="inventory-shell">
 
                 <div className="stats-row inventory-stats" aria-label="Resumen del inventario">
-                  <div className="stat-card inventory-stat inventory-stat-empty">
-                    <div className="inventory-stat-heading">
-                      <span className="inventory-stat-icon"><InterfaceIcon name="inventory" /></span>
-                      <span className="stat-label">Sin stock</span>
-                    </div>
-                    <span className="stat-value">{outOfStockCount}</span>
-                    <span className="inventory-stat-caption">Productos agotados</span>
-                  </div>
-                  <div className="stat-card inventory-stat">
-                    <div className="inventory-stat-heading">
-                      <span className="inventory-stat-icon"><InterfaceIcon name="check" /></span>
-                      <span className="stat-label">Productos activos</span>
-                    </div>
-                    <span className="stat-value">{activeProductCount}</span>
-                    <span className="inventory-stat-caption">Con existencias disponibles</span>
-                  </div>
-                  <div className="stat-card inventory-stat inventory-stat-total">
-                    <div className="inventory-stat-heading">
-                      <span className="inventory-stat-icon"><InterfaceIcon name="wallet" /></span>
-                      <span className="stat-label">Valor total</span>
-                    </div>
-                    <span className="stat-value accent inventory-stat-amount">{formatCurrency(totalInventoryValue)}</span>
-                    <span className="inventory-stat-caption">Existencias a precio de venta</span>
-                  </div>
+                  <KpiCard icon="inventory" label="Sin stock" value={outOfStockCount} caption="Productos agotados" tone="warning" />
+                  <KpiCard icon="check" label="Productos activos" value={activeProductCount} caption="Con existencias disponibles" />
+                  <KpiCard icon="wallet" label="Valor total" value={formatCurrency(totalInventoryValue)} caption="Existencias a precio de venta" tone="total" />
                 </div>
 
                 <div className="section-head" style={{ marginBottom: 14 }}>
@@ -2945,10 +2915,29 @@ function App() {
           <EstimatesModule products={products} cashSummary={cashSummary} />
         )}
 
+        {activeTab === 'notas' && (
+          <NotesModule
+            key={user.id}
+            products={products}
+            debts={debts}
+            transactions={transactions}
+            notify={showToast}
+            onOpenRelation={(note) => {
+              if (note.relationType === 'producto') {
+                openInventoryList()
+                setInventorySearch(products.find((product) => product.id === note.relationId)?.name || '')
+                setInventoryGramFilter('Todos')
+                setInventoryTypeFilter('Todos')
+                setActiveTab('inventario')
+              } else setActiveTab(['cliente', 'deuda'].includes(note.relationType) ? 'deudas' : 'caja')
+            }}
+          />
+        )}
+
       </div>
 
       {/* -- BOTTOM NAV -------------------------------------- */}
-      <nav className="bottom-nav">
+      <nav className="bottom-nav" aria-label="Módulos">
         <button
           className={`bottom-nav-btn ${activeTab === 'ventas' ? 'active' : ''}`}
           onClick={() => setActiveTab('ventas')}
@@ -2961,8 +2950,8 @@ function App() {
           className={`bottom-nav-btn ${activeTab === 'inventario' ? 'active' : ''}`}
           onClick={() => { setActiveTab('inventario'); openInventoryList() }}
         >
-          <span className="material-symbols-outlined bottom-nav-icon">smoke_free</span>
-          <span className="bottom-nav-label">Droga</span>
+          <span className="material-symbols-outlined bottom-nav-icon">inventory_2</span>
+          <span className="bottom-nav-label">Inventario</span>
         </button>
 
         <button
@@ -2986,7 +2975,16 @@ function App() {
           onClick={() => setActiveTab('calculos')}
         >
           <span className="material-symbols-outlined bottom-nav-icon">calculate</span>
-          <span className="bottom-nav-label">Calculos</span>
+          <span className="bottom-nav-label">Cálculos</span>
+        </button>
+        <button
+          type="button"
+          className={`bottom-nav-btn ${activeTab === 'notas' ? 'active' : ''}`}
+          aria-current={activeTab === 'notas' ? 'page' : undefined}
+          onClick={() => setActiveTab('notas')}
+        >
+          <InterfaceIcon name="note" className="bottom-nav-icon" />
+          <span className="bottom-nav-label">Notas</span>
         </button>
       </nav>
 

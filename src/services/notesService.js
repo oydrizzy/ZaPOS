@@ -21,9 +21,7 @@ async function getAuthUser() {
 
 /**
  * Carga todas las notas del usuario autenticado.
- * RLS filtra automáticamente por auth.uid() = user_id.
- * No se necesita .eq('user_id', ...) porque RLS ya lo garantiza,
- * pero lo añadimos como defensa en profundidad.
+ * El acceso depende de las politicas configuradas en la tabla notas.
  */
 export async function getNotes() {
   const result = await supabase
@@ -33,8 +31,7 @@ export async function getNotes() {
     .order('created_at', { ascending: false })
 
   if (isMissingNotesTable(result.error)) {
-    console.warn('La tabla public.notas no existe. Ejecuta supabase/create_notas.sql.')
-    return []
+    throw new Error('El espacio de notas todavía no está disponible. Contacta al administrador para activarlo.')
   }
 
   return assertSupabaseResult(result, 'No se pudieron cargar las notas').map(mapNoteFromDb)
@@ -58,12 +55,20 @@ export async function createNote(note) {
   // Paso 3: inyectar user_id desde Auth, no desde el formulario
   dbPayload.user_id = user.id
 
+  let result = await supabase
+    .from('notas')
+    .insert(dbPayload)
+    .select()
+    .single()
+
+  // Older installations used usuario_id; only retry a known missing-column error.
+  if (['PGRST204', '42703'].includes(result.error?.code) && /user_id/.test(result.error.message)) {
+    const { user_id, ...legacyPayload } = dbPayload
+    result = await supabase.from('notas').insert({ ...legacyPayload, usuario_id: user_id }).select().single()
+  }
+
   const data = assertSupabaseResult(
-    await supabase
-      .from('notas')
-      .insert(dbPayload)
-      .select()
-      .single(),
+    result,
     'No se pudo crear la nota'
   )
 

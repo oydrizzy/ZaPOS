@@ -208,8 +208,8 @@ export function mapNoteFromDb(row = {}) {
     noteDate: row.fecha_nota || '',
     relationType: row.tipo_relacion || '',
     relationId: row.id_relacion == null ? '' : Number(row.id_relacion),
-    // user_id is the real DB column name (not usuario_id)
-    userId: row.user_id || '',
+    // Support both the current schema and the original notas table.
+    userId: row.user_id || row.usuario_id || '',
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }
