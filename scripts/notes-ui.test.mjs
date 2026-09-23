@@ -102,7 +102,7 @@ globalThis.__appServiceTest = {
 const mockPlugin = {
   name: 'isolated-services',
   setup(builder) {
-    builder.onResolve({ filter: /^react(?:\/.*)?$/ }, (args) => ({
+    builder.onResolve({ filter: /^react(?:-dom)?(?:\/.*)?$/ }, (args) => ({
       path: pathToFileURL(require.resolve(args.path)).href,
       external: true
     }))
@@ -226,6 +226,31 @@ test('notes survive remount; create, edit, pin, complete and delete preserve dat
   store = []
   await renderNotes()
   await click(findButton('Nueva nota'))
+  assert.ok(
+    document.querySelector('.notes-overlay').parentElement === document.body,
+    'modal mounts on document.body'
+  )
+  assert.equal(
+    document
+      .querySelector('.note-editor-footer button[type="submit"]')
+      .textContent.includes('Crear nota'),
+    true
+  )
+  await act(async () =>
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'Tab',
+        shiftKey: true,
+        bubbles: true,
+        cancelable: true
+      })
+    )
+  )
+  assert.ok(
+    document.querySelector('.note-editor').contains(document.activeElement),
+    'keyboard focus stays in the modal'
+  )
+  assert.notEqual(document.activeElement.id, 'note-editor-heading')
   await type(byLabel('T\u00edtulo de la nota'), 'Pedido especial')
   await type(byLabel('Contenido de la nota'), 'Primera linea\nSegunda linea')
   await submit()

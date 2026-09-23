@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import {
   createNote,
   deleteNote,
@@ -228,7 +229,10 @@ export default function NotesModule({
     const previousFocus = document.activeElement
     const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
-    dialog.current?.querySelector('input, button')?.focus()
+    const initialFocus =
+      dialog.current?.querySelector('[data-note-initial-focus]') ||
+      dialog.current?.querySelector('input, button')
+    initialFocus?.focus()
     const onKey = (event) => {
       if (event.key === 'Escape') {
         event.preventDefault()
@@ -242,10 +246,14 @@ export default function NotesModule({
         ...(dialog.current?.querySelectorAll(
           'button:not(:disabled), input, textarea, select, [tabindex="0"]'
         ) || [])
-      ]
+      ].filter((element) => !element.matches(':disabled'))
       const first = focusable[0]
       const last = focusable[focusable.length - 1]
-      if (event.shiftKey && document.activeElement === first) {
+      if (
+        event.shiftKey &&
+        (document.activeElement === first ||
+          !focusable.includes(document.activeElement))
+      ) {
         event.preventDefault()
         last?.focus()
       } else if (!event.shiftKey && document.activeElement === last) {
@@ -637,244 +645,282 @@ export default function NotesModule({
           </footer>
         </>
       )}
-      {(draft || confirm) && (
-        <div
-          className="notes-overlay"
-          onClick={() => {
-            if (!busy) {
-              if (confirm) setConfirm(null)
-              else closeEditor()
-            }
-          }}
-        >
-          {confirm ? (
-            <section
-              ref={dialog}
-              className="notes-confirm"
-              role="alertdialog"
-              aria-modal="true"
-              aria-labelledby="note-confirm-title"
-              aria-describedby="note-confirm-body"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Icon>{confirm.kind === 'delete' ? 'delete' : 'edit_note'}</Icon>
-              <h2 id="note-confirm-title">
-                {confirm.kind === 'delete'
-                  ? '¿Eliminar esta nota?'
-                  : '¿Descartar los cambios?'}
-              </h2>
-              <p id="note-confirm-body">
-                {confirm.kind === 'delete'
-                  ? 'La nota se eliminará permanentemente.'
-                  : 'Los cambios sin guardar se perderán.'}
-              </p>
-              <div>
-                <button
-                  className="ghost-btn"
-                  disabled={busy}
-                  onClick={() => setConfirm(null)}
-                >
-                  Cancelar
-                </button>
-                <button
-                  className="danger-btn"
-                  disabled={busy}
-                  onClick={() => {
-                    if (confirm.kind === 'discard') {
-                      setDraft(null)
-                      setConfirm(null)
-                    } else
-                      run(
-                        () => deleteNote(draft.id),
-                        'Nota eliminada',
-                        () => {
-                          setNotes((current) =>
-                            current.filter((n) => n.id !== draft.id)
-                          )
-                          setDraft(null)
-                          setConfirm(null)
-                        }
-                      )
-                  }}
-                >
-                  {busy
-                    ? 'Eliminando...'
-                    : confirm.kind === 'delete'
-                      ? 'Eliminar'
-                      : 'Descartar'}
-                </button>
-              </div>
-            </section>
-          ) : (
-            <form
-              ref={dialog}
-              className="note-editor"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="note-editor-heading"
-              onSubmit={save}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <header className="note-editor-bar">
-                <button
-                  className="notes-tool"
-                  type="button"
-                  title="Cerrar nota"
-                  aria-label="Cerrar nota"
-                  disabled={busy}
-                  onClick={closeEditor}
-                >
-                  <Icon>arrow_back</Icon>
-                </button>
-                <h2 id="note-editor-heading">
-                  {draft.id ? 'Editar nota' : 'Nueva nota'}
+      {(draft || confirm) &&
+        createPortal(
+          <div
+            className="notes-overlay"
+            onClick={() => {
+              if (!busy) {
+                if (confirm) setConfirm(null)
+                else closeEditor()
+              }
+            }}
+          >
+            {confirm ? (
+              <section
+                ref={dialog}
+                className="notes-confirm"
+                role="alertdialog"
+                aria-modal="true"
+                aria-labelledby="note-confirm-title"
+                aria-describedby="note-confirm-body"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Icon>
+                  {confirm.kind === 'delete' ? 'delete' : 'edit_note'}
+                </Icon>
+                <h2 id="note-confirm-title">
+                  {confirm.kind === 'delete'
+                    ? '¿Eliminar esta nota?'
+                    : '¿Descartar los cambios?'}
                 </h2>
-                <button type="submit" className="note-save" disabled={busy}>
-                  {busy ? 'Guardando...' : 'Guardar'}
-                  <Icon>check</Icon>
-                </button>
-              </header>
-              <fieldset disabled={busy} className="note-editor-body">
-                <input
-                  className="note-title-input"
-                  aria-label="Título de la nota"
-                  placeholder="Título"
-                  maxLength={150}
-                  required
-                  value={draft.title}
-                  onChange={(e) => change('title', e.target.value)}
-                />
-                <textarea
-                  className="note-body-input"
-                  aria-label="Contenido de la nota"
-                  placeholder="Escribe tu nota..."
-                  value={draft.description}
-                  onChange={(e) => change('description', e.target.value)}
-                />
-                <div className="note-editor-options">
-                  <label>
-                    Prioridad
-                    <select
-                      value={draft.priority}
-                      onChange={(e) => change('priority', e.target.value)}
-                    >
-                      {Object.entries(priorityLabels).map(([v, l]) => (
-                        <option key={v} value={v}>
-                          {l}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label>
-                    Fecha y hora
-                    <input
-                      type="datetime-local"
-                      value={localDateTime(draft.noteDate)}
-                      onChange={(e) =>
-                        change(
-                          'noteDate',
-                          e.target.value
-                            ? new Date(e.target.value).toISOString()
-                            : ''
-                        )
-                      }
-                    />
-                  </label>
-                  <label className="note-relation-field">
-                    Relacionado con
-                    <select
-                      value={
-                        draft.relationType
-                          ? `${draft.relationType}:${draft.relationId}`
-                          : ''
-                      }
-                      onChange={(e) => {
-                        const [type, id] = e.target.value.split(':')
-                        setDraft((current) => ({
-                          ...current,
-                          relationType: type || '',
-                          relationId: id ? Number(id) : ''
-                        }))
-                      }}
-                    >
-                      <option value="">Sin relación</option>
-                      {draft.relationType &&
-                        !relations.some(
-                          (r) =>
-                            r.type === draft.relationType &&
-                            String(r.id) === String(draft.relationId)
-                        ) && (
-                          <option
-                            value={`${draft.relationType}:${draft.relationId}`}
-                          >
-                            {relationLabel(draft)}
-                          </option>
-                        )}
-                      {Object.entries(relationLabels).map(([type, label]) => (
-                        <optgroup key={type} label={label}>
-                          {relations
-                            .filter((r) => r.type === type)
-                            .map((r) => (
-                              <option
-                                key={`${r.type}:${r.id}`}
-                                value={`${r.type}:${r.id}`}
-                              >
-                                {r.label}
-                              </option>
-                            ))}
-                        </optgroup>
-                      ))}
-                    </select>
-                  </label>
-                </div>
-                <div className="note-editor-checks">
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={draft.pinned}
-                      onChange={(e) => change('pinned', e.target.checked)}
-                    />
-                    <Icon>push_pin</Icon>Fijada
-                  </label>
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={draft.status === 'completada'}
-                      onChange={(e) =>
-                        change(
-                          'status',
-                          e.target.checked ? 'completada' : 'pendiente'
-                        )
-                      }
-                    />
-                    <Icon>check_circle</Icon>Completada
-                  </label>
-                </div>
-              </fieldset>
-              <footer className="note-editor-footer">
-                <span>
-                  {draft.updatedAt
-                    ? `Editada el ${dateLabel(draft.updatedAt)}`
-                    : 'Nueva nota'}
-                  {dirty ? ' · Sin guardar' : ''}
-                </span>
-                {draft.id && (
+                <p id="note-confirm-body">
+                  {confirm.kind === 'delete'
+                    ? 'La nota se eliminará permanentemente.'
+                    : 'Los cambios sin guardar se perderán.'}
+                </p>
+                <div>
                   <button
-                    type="button"
-                    className="notes-tool note-delete"
-                    title="Eliminar nota"
-                    aria-label="Eliminar nota"
+                    className="ghost-btn"
                     disabled={busy}
-                    onClick={() => setConfirm({ kind: 'delete' })}
+                    onClick={() => setConfirm(null)}
                   >
-                    <Icon>delete</Icon>
+                    Cancelar
                   </button>
-                )}
-              </footer>
-            </form>
-          )}
-        </div>
-      )}
+                  <button
+                    className="danger-btn"
+                    disabled={busy}
+                    onClick={() => {
+                      if (confirm.kind === 'discard') {
+                        setDraft(null)
+                        setConfirm(null)
+                      } else
+                        run(
+                          () => deleteNote(draft.id),
+                          'Nota eliminada',
+                          () => {
+                            setNotes((current) =>
+                              current.filter((n) => n.id !== draft.id)
+                            )
+                            setDraft(null)
+                            setConfirm(null)
+                          }
+                        )
+                    }}
+                  >
+                    {busy
+                      ? 'Eliminando...'
+                      : confirm.kind === 'delete'
+                        ? 'Eliminar'
+                        : 'Descartar'}
+                  </button>
+                </div>
+              </section>
+            ) : (
+              <form
+                ref={dialog}
+                className="note-editor"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="note-editor-heading"
+                onSubmit={save}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <header className="note-editor-bar">
+                  <span className="note-editor-heading-icon">
+                    <Icon>edit_note</Icon>
+                  </span>
+                  <h2
+                    id="note-editor-heading"
+                    tabIndex={-1}
+                    data-note-initial-focus
+                  >
+                    {draft.id ? 'Editar nota' : 'Nueva nota'}
+                  </h2>
+                  <button
+                    className="notes-tool"
+                    type="button"
+                    title="Cerrar nota"
+                    aria-label="Cerrar nota"
+                    disabled={busy}
+                    onClick={closeEditor}
+                  >
+                    <Icon>close</Icon>
+                  </button>
+                </header>
+                <fieldset disabled={busy} className="note-editor-body">
+                  <label className="note-editor-label" htmlFor="note-title">
+                    Título
+                  </label>
+                  <input
+                    id="note-title"
+                    className="note-title-input"
+                    aria-label="Título de la nota"
+                    placeholder="Nombre de la nota"
+                    maxLength={150}
+                    required
+                    value={draft.title}
+                    onChange={(e) => change('title', e.target.value)}
+                  />
+                  <label
+                    className="note-editor-label"
+                    htmlFor="note-description"
+                  >
+                    Contenido <span>Opcional</span>
+                  </label>
+                  <textarea
+                    id="note-description"
+                    className="note-body-input"
+                    aria-label="Contenido de la nota"
+                    placeholder="Escribe tu nota..."
+                    value={draft.description}
+                    onChange={(e) => change('description', e.target.value)}
+                  />
+                  <div className="note-editor-options">
+                    <label>
+                      Prioridad
+                      <select
+                        value={draft.priority}
+                        onChange={(e) => change('priority', e.target.value)}
+                      >
+                        {Object.entries(priorityLabels).map(([v, l]) => (
+                          <option key={v} value={v}>
+                            {l}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label>
+                      Fecha y hora
+                      <input
+                        type="datetime-local"
+                        value={localDateTime(draft.noteDate)}
+                        onChange={(e) =>
+                          change(
+                            'noteDate',
+                            e.target.value
+                              ? new Date(e.target.value).toISOString()
+                              : ''
+                          )
+                        }
+                      />
+                    </label>
+                    <label className="note-relation-field">
+                      Relacionado con
+                      <select
+                        value={
+                          draft.relationType
+                            ? `${draft.relationType}:${draft.relationId}`
+                            : ''
+                        }
+                        onChange={(e) => {
+                          const [type, id] = e.target.value.split(':')
+                          setDraft((current) => ({
+                            ...current,
+                            relationType: type || '',
+                            relationId: id ? Number(id) : ''
+                          }))
+                        }}
+                      >
+                        <option value="">Sin relación</option>
+                        {draft.relationType &&
+                          !relations.some(
+                            (r) =>
+                              r.type === draft.relationType &&
+                              String(r.id) === String(draft.relationId)
+                          ) && (
+                            <option
+                              value={`${draft.relationType}:${draft.relationId}`}
+                            >
+                              {relationLabel(draft)}
+                            </option>
+                          )}
+                        {Object.entries(relationLabels).map(([type, label]) => (
+                          <optgroup key={type} label={label}>
+                            {relations
+                              .filter((r) => r.type === type)
+                              .map((r) => (
+                                <option
+                                  key={`${r.type}:${r.id}`}
+                                  value={`${r.type}:${r.id}`}
+                                >
+                                  {r.label}
+                                </option>
+                              ))}
+                          </optgroup>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                  <div className="note-editor-checks">
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={draft.pinned}
+                        onChange={(e) => change('pinned', e.target.checked)}
+                      />
+                      <Icon>push_pin</Icon>Fijada
+                    </label>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={draft.status === 'completada'}
+                        onChange={(e) =>
+                          change(
+                            'status',
+                            e.target.checked ? 'completada' : 'pendiente'
+                          )
+                        }
+                      />
+                      <Icon>check_circle</Icon>Completada
+                    </label>
+                  </div>
+                </fieldset>
+                <footer className="note-editor-footer">
+                  <div className="note-editor-footer-meta">
+                    <span>
+                      {draft.updatedAt
+                        ? `Editada el ${dateLabel(draft.updatedAt)}`
+                        : 'Nueva nota'}
+                      {dirty ? ' · Sin guardar' : ''}
+                    </span>
+                    {draft.id && (
+                      <button
+                        type="button"
+                        className="notes-tool note-delete"
+                        title="Eliminar nota"
+                        aria-label="Eliminar nota"
+                        disabled={busy}
+                        onClick={() => setConfirm({ kind: 'delete' })}
+                      >
+                        <Icon>delete</Icon>
+                      </button>
+                    )}
+                  </div>
+                  <div className="note-editor-footer-actions">
+                    <button
+                      type="button"
+                      className="note-cancel"
+                      disabled={busy}
+                      onClick={closeEditor}
+                    >
+                      Cancelar
+                    </button>
+                    <button type="submit" className="note-save" disabled={busy}>
+                      <Icon>{busy ? 'sync' : 'check'}</Icon>
+                      {busy
+                        ? 'Guardando...'
+                        : draft.id
+                          ? 'Guardar cambios'
+                          : 'Crear nota'}
+                    </button>
+                  </div>
+                </footer>
+              </form>
+            )}
+          </div>,
+          document.body
+        )}
     </section>
   )
 }
