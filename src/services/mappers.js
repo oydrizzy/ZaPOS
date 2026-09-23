@@ -196,3 +196,38 @@ export function mapLogToDb(log = {}, { includeId = true } = {}) {
     created_at: log.date,
   })
 }
+
+export function mapNoteFromDb(row = {}) {
+  return {
+    id: Number(row.id),
+    title: row.titulo || '',
+    description: row.descripcion || '',
+    priority: row.prioridad || 'normal',
+    status: row.estado || 'pendiente',
+    pinned: Boolean(row.fijada),
+    noteDate: row.fecha_nota || '',
+    relationType: row.tipo_relacion || '',
+    relationId: row.id_relacion == null ? '' : Number(row.id_relacion),
+    // user_id is the real DB column name (not usuario_id)
+    userId: row.user_id || '',
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
+}
+
+export function mapNoteToDb(note = {}) {
+  // IMPORTANT: user_id is intentionally NOT included here.
+  // createNote() in notesService injects user_id from Supabase Auth.
+  // updateNote() deletes user_id before sending to prevent ownership changes.
+  return compactDbObject({
+    titulo: note.title,
+    descripcion: note.description || null,
+    prioridad: note.priority || 'normal',
+    estado: note.status || 'pendiente',
+    fijada: Boolean(note.pinned),
+    fecha_nota: note.noteDate || null,
+    tipo_relacion: note.relationType || null,
+    id_relacion: note.relationId || null,
+    updated_at: note.updatedAt,
+  })
+}
